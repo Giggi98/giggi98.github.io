@@ -5,7 +5,7 @@
 window.SITE = {
   // URL della web app Google Apps Script (finisce con /exec).
   // Finché è vuoto l'RSVP resta chiuso; con ?invito=DEMO si vede un'anteprima che non salva nulla.
-  rsvpApi: '',
+  rsvpApi: 'https://script.google.com/macros/s/AKfycbx22OZhNEr05OxGnSBPShT9RlgFky9mV1cbP9IC4k6xMBn03CaWsetJ7bflnE0g6wX9CA/exec',
 
   // 29 maggio 2027, cerimonia alle 11:00 (ora italiana, UTC+2 a maggio)
   date: '2027-05-29',
