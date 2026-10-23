@@ -1,7 +1,8 @@
 # Backend RSVP: Google Sheet + Apps Script
 
 Il sito non ha un server: le risposte degli invitati arrivano a un Google Sheet tramite questo script.
-Il foglio è anche la vostra lista invitati. Si scarica in Excel quando volete (File > Scarica > Microsoft Excel).
+Tutti ricevono lo stesso link del sito: ognuno scrive il proprio nome nel modulo, aggiunge chi viene con lui, e lo script
+aggiunge le righe al foglio `Invitati`. Alla prima risposta il sito dà all'invitato un link personale (`?invito=CODICE`) per modificarla. Il foglio si scarica in Excel quando volete (File > Scarica > Microsoft Excel).
 
 ## Installazione (circa 15 minuti, una volta sola)
 
@@ -17,47 +18,57 @@ Il foglio è anche la vostra lista invitati. Si scarica in Excel quando volete (
 6. **Compila `Config`:**
    - `scadenza_rsvp`: ultimo giorno per rispondere o modificare (formato `2027-04-30`).
    - `email_notifica`: la mail che riceve un avviso a ogni risposta (lasciala vuota per non riceverne). `notifica_attiva`: `SI` o `NO`.
-   - `intestatario`, `iban`, `causale`: per la lista nozze. L'IBAN compare sul sito solo a chi apre un invito con un codice valido.
-7. **Compila `Invitati`:** una riga per persona. Compila `Invito` (come volete salutarli, es. "Famiglia Rossi"), `Lingua` (`it` o `en`),
-   `Nome`, e scrivi `Sì` in `Bambino` per i bambini (serve al conteggio dei menù bimbi).
-   Tutte le persone dello stesso invito devono avere **lo stesso testo** in `Invito`: così condividono un unico link.
-   Le colonne `ID`, `Codice` e `Link` le riempie lo script. `Risposta`, `Dieta`, `Allergie`, `Aggiornato` le riempie il sito.
-   Cancella le tre righe "Famiglia Esempio".
-8. **Genera i link.** Menu Matrimonio > "2. Genera codici e link". Nell'ultima colonna trovi il link personale di ogni invito.
-   Puoi rieseguirlo ogni volta che aggiungi invitati: i codici già assegnati non cambiano.
-9. **Pubblica lo script come web app.** Nell'editor: Distribuisci > Nuova distribuzione > ingranaggio > App web.
+   - `intestatario`, `iban`, `causale`: per il regalo di nozze. Compaiono nella sezione "Regalo di nozze" del sito, visibili a chi lo apre.
+7. **`Invitati` si riempie da solo.** Ogni risposta aggiunge una riga per persona: `Invito` è il nome di chi ha risposto, `Lingua` quella
+   del sito al momento dell'invio, `Bambino` è `Sì` se l'invitato ha spuntato la casella. `ID`, `Codice` e `Link` li scrive lo script.
+   Cancella le tre righe "Famiglia Esempio" create da "Prepara i fogli". Se vuoi puoi anche scrivere tu degli invitati e dare loro un link
+   personale con il menu Matrimonio > "2. Genera codici e link" (opzionale: non serve per il link unico).
+8. **Pubblica lo script come web app.** Nell'editor: Distribuisci > Nuova distribuzione > ingranaggio > App web.
    - Esegui come: **Me**
    - Chi ha accesso: **Chiunque**
    - Distribuisci e copia l'URL che finisce con `/exec`.
    "Chiunque" serve perché gli invitati non hanno un account Google. I dati restano nel foglio, che è privato: dallo script esce
-   solo l'invito di chi presenta un codice valido.
-10. **Collega il sito.** Incolla l'URL in `rsvpApi` dentro [js/config.js](../js/config.js), poi fai commit e push.
-    Apri un link personale e fai una risposta di prova. Poi cancella dal foglio i dati di prova (colonne `Risposta`...`Aggiornato` della riga, e la riga in `Messaggi`).
+   solo la risposta di chi presenta il suo codice (e scadenza e IBAN, che sono pubblici).
+9. **Collega il sito.** Incolla l'URL in `rsvpApi` dentro [js/config.js](../js/config.js), poi fai commit e push.
+    Apri il sito, fai una risposta di prova e controlla che arrivi nel foglio. Poi cancella dal foglio i dati di prova (colonne `Risposta`...`Aggiornato` della riga, e la riga in `Messaggi`).
 
 ## Se modifichi lo script dopo la pubblicazione
 
-Distribuisci > Gestisci distribuzioni > matita > Versione: "Nuova versione" > Distribuisci. L'URL resta lo stesso.
+Incolla il nuovo `Code.gs` nell'editor, salva, poi Distribuisci > Gestisci distribuzioni > matita > Versione: "Nuova versione" > Distribuisci. L'URL resta lo stesso.
+Se la risposta del sito non cambia, il deploy non è stato aggiornato: il sito parla sempre con l'ultima versione *distribuita*, non con quella nell'editor.
 Se invece crei una "Nuova distribuzione" l'URL cambia e va aggiornato in `js/config.js`.
 
 ## Cosa vedi nel foglio
 
 | Foglio | Contenuto |
 | --- | --- |
-| `Invitati` | una riga per persona: risposta (Sì/No), dieta, allergie, data dell'ultimo aggiornamento, link personale |
+| `Invitati` | una riga per persona: nome, bambino, risposta (Sì/No), dieta, allergie, data dell'ultimo aggiornamento, link per modificare |
 | `Messaggi` | il messaggio per gli sposi, uno per invito |
 | `Riepilogo` | confermati, non vengono, senza risposta, menù bimbi, vegetariani, vegani, allergie |
 | `Config` | scadenza, email di notifica, IBAN |
+| `Controlli` | rapporto di duplicati ed errori (si crea dal menu Matrimonio > "3. Controlla duplicati ed errori") |
 
 Puoi ordinare e filtrare `Invitati` come vuoi: lo script riconosce le persone dal loro `ID`, non dalla posizione.
 Non cambiare il nome dei fogli né l'ordine delle colonne.
 
+## Controlli su duplicati ed errori
+
+- In `Invitati` i **nomi doppi** si colorano di rosso da soli (maiuscole e minuscole non contano).
+- Menu Matrimonio > "3. Controlla duplicati ed errori" crea il foglio `Controlli` con: nomi doppi o ripetuti nello stesso invito, stessi nomi in ordine
+  diverso ("Bianchi Mario" / "Mario Bianchi"), nomi quasi uguali (un refuso), righe senza nome, codici condivisi da inviti diversi e bambini
+  che vengono senza nessun adulto del loro invito. Per ogni problema indica le righe di `Invitati`. Rilancialo quando vuoi: riscrive il foglio.
+- Il controllo non cancella né unisce nulla: decidete voi cosa fare con le righe segnalate.
+
 ## Privacy
 
 - La repo GitHub è pubblica: in questa cartella c'è solo il codice, nessun dato. Non incollare mai nella repo IBAN, codici o liste.
-- Il codice invito è di 6 caratteri su 32 possibili (circa un miliardo di combinazioni): non si indovina a tentativi.
-- Chi ha il link di un invito può vedere e cambiare le risposte di quell'invito. Per questo il link va mandato solo a chi è invitato.
+- Chiunque abbia il link del sito può mandare una risposta. Per limitare gli abusi: un campo nascosto che i bot compilano (e che fa scartare l'invio),
+  massimo 12 persone per risposta e massimo 600 righe in `Invitati`. Controlla ogni tanto il foglio e togli a mano le righe che non riconosci.
+- Il codice di una risposta è di 6 caratteri su 32 possibili (circa un miliardo di combinazioni): non si indovina a tentativi. Chi ha quel link
+  vede e cambia solo quella risposta.
+- Scadenza, stato aperto/chiuso e IBAN sono pubblici (li legge chiunque apra il sito). I nomi e le risposte degli invitati no.
 
 ## Collaudo in locale (per chi modifica lo script)
 
 `node apps-script/test.js` esegue `Code.gs` contro un finto foglio di calcolo e controlla codici, lettura dell'invito, salvataggio,
-scadenza, validazione e notifiche. Non sostituisce una prova reale dopo la pubblicazione.
+creazione e modifica delle risposte, scadenza, validazione, antispam e notifiche. Non sostituisce una prova reale dopo la pubblicazione.

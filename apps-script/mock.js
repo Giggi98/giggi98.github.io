@@ -42,6 +42,7 @@ class Sheet {
   getMaxRows() { return 1000; }
   getRange(r, c, nr = 1, nc = 1) { return new Range(this, r, c, nr, nc); }
   setFrozenRows() {}
+  setConditionalFormatRules(r) { this.rules = r; }
   setColumnWidth() {}
   clear() { this.data = []; }
 }
@@ -59,6 +60,7 @@ function makeEnv() {
     SpreadsheetApp: {
       getActive: () => ss,
       getUi: () => ({ createMenu: () => ({ addItem() { return this; }, addToUi() {} }), alert: (m) => alerts.push(m) }),
+      newConditionalFormatRule: () => { const b = { whenFormulaSatisfied(f) { this.formula = f; return this; }, setBackground() { return this; }, setRanges() { return this; }, build() { return { formula: this.formula }; } }; return b; },
       newDataValidation: () => ({ requireValueInList() { return this; }, build: () => ({}) })
     },
     LockService: { getScriptLock: () => ({ waitLock() {}, releaseLock() {} }) },

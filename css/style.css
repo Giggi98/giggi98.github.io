@@ -485,6 +485,21 @@ a { color: inherit; }
   vertical-align: .2em;
   color: var(--muted);
 }
+.person .field { margin-bottom: 1rem; }
+.check {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  margin: 0 0 1rem;
+  font-size: 1.1rem;
+  cursor: pointer;
+}
+.check input { width: 1.3rem; height: 1.3rem; margin: 0; accent-color: var(--blanket); }
+.person__remove { margin: 1rem 0 0; }
+.hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+.linkbox { margin-top: 1.4rem; padding-top: 1.2rem; border-top: 1px solid rgba(51, 92, 114, .22); }
+.linkbox p { margin: 0 0 .6rem; }
+.linkbox__url { font-family: var(--serif); font-weight: 500; overflow-wrap: anywhere; user-select: all; }
 .choice { display: flex; flex-wrap: wrap; gap: .7rem; }
 .choice label { position: relative; flex: 1 1 11rem; }
 .choice input {

@@ -26,14 +26,14 @@ Contesto per Claude Code: stato del progetto e decisioni prese finora. Lingua di
 
 - **Tempistica:** sito completo (con RSVP aperto) il prima possibile. L'RSVP resta aperto per mesi, quindi gli ospiti devono poter **modificare** la risposta fino alla scadenza (proposta: fine aprile 2027, configurabile).
 - **Lingue:** italiano + inglese, compresi form RSVP e messaggi.
-- **RSVP con link personale per invito** (famiglia/coppia), es. `luciegigi.it/?invito=K7M2QX`: il sito saluta per nome, mostra le persone dell'invito già elencate, usa la lingua impostata per quell'invito.
+- **RSVP con link unico per tutti (deciso il 2026-10-23, sostituisce i link personali):** gli sposi mandano a tutti lo stesso indirizzo `luciegigi.it` via WhatsApp. Il modulo chiede nome e cognome di chi risponde e permette di aggiungere le persone che vengono con lui (fino a 12). Alla prima risposta lo script crea un invito con un codice e lo restituisce; il sito mostra il link `luciegigi.it/?invito=CODICE` da salvare e lo ricorda nel browser (`localStorage`, chiave `rsvp_code`), così l'invitato può **modificare** la risposta. Se cambia telefono senza il link, deve scrivere agli sposi (compare un secondo invito: li unificano a mano nel foglio).
   - Per ogni persona: partecipa sì/no + esigenze alimentari (vegetariano/vegano, allergie, intolleranze).
   - Per invito: un campo libero "messaggio per gli sposi".
-  - I bambini li segnano gli sposi nella lista invitati (conteggio menù bimbi automatico).
+  - Bambini: li segna l'invitato con la casella "Bambino/a (menù bimbi)" (conteggio menù bimbi automatico nel foglio `Riepilogo`).
   - Proposta da confermare: mail di notifica agli sposi a ogni risposta (disattivabile).
   - Scartati: navetta, alloggio, canzone.
-- **Backend RSVP:** Google Sheet + Google Apps Script (web app) che riceve le risposte dal sito. Gratuito; il foglio si scarica in Excel. Lista invitati, codici e risposte vivono solo nel foglio.
-- **Privacy: "pubblico ma discreto".** Informazioni generali visibili a chiunque abbia l'indirizzo; `noindex` (fuori da Google); IBAN e dati invitati solo nel foglio Google, restituiti dallo script solo a chi ha un codice invito valido. **La repo è pubblica: mai mettere IBAN, lista invitati o altri dati personali nel codice.**
+- **Backend RSVP:** Google Sheet + Google Apps Script (web app) che riceve le risposte dal sito. Gratuito; il foglio si scarica in Excel. Risposte e codici vivono solo nel foglio; i link personali pre-generati dal menu "Genera codici e link" restano possibili ma non servono più.
+- **Privacy: "pubblico ma discreto".** Informazioni generali visibili a chiunque abbia l'indirizzo; `noindex` (fuori da Google). Con il link unico **IBAN, scadenza e stato (chiuso/aperto) sono pubblici**: li restituisce `?action=info` a chiunque. L'IBAN vero sta nel foglio `Config`, non nella repo; le risposte degli invitati escono dallo script solo con il codice della risposta. Antispam: campo trappola nascosto, massimo 12 persone per risposta, massimo 600 righe in `Invitati`. **La repo è pubblica: mai mettere IBAN, liste di invitati o altri dati personali nel codice.**
 - **Sezioni:** copertina (nomi, data, countdown, "aggiungi al calendario"), programma, **La Chiesa** (orario, indirizzo, "Apri in Maps", mappa, parcheggio), **Il Ricevimento** (idem + percorso dalla chiesa), RSVP (sezione con pulsante "RSVP" che apre il modulo; il pulsante c'è sempre; senza backend, cliccandolo compare "aprirà a breve"), regalo di nozze (solo IBAN, niente lista regali; sezione sempre visibile, IBAN con pulsante "copia"), contatti, **galleria foto**. Scartate: la sezione FAQ (tolta il 2026-10-23), "la nostra storia", "come arrivare e dormire" generale, foto degli ospiti con QR.
 - **Apertura con foto a scorrimento (da fare):** al posto della singola foto del Save the Date (`assets/hero.jpg`) gli sposi vogliono una presentazione che scorre foto di loro due insieme, con un tempo ragionevole tra una foto e l'altra (idea: 5-6 s con dissolvenza, rispettando `prefers-reduced-motion`). Le foto verranno prese da una cartella o da un Drive: **ancora da decidere dove**. Il blocco `photos` di `config.js`/`optimize_photos.py` potrebbe servire da base. Prima di implementarla chiedere dove stanno le foto.
 - **Foto di chiesa e ricevimento (2026-10-23):** le mappe OpenStreetMap incorporate sono state sostituite da `assets/chiesa.webp` e `assets/ricevimento.webp` (gli sposi non le gradivano); restano i pulsanti "Apri in Maps".
@@ -50,22 +50,22 @@ HTML/CSS/JS statico, nessuna build, nessuna dipendenza. File:
 - `js/app.js`: lingua, countdown, calendario (.ics all-day, senza link Google Calendar: tolto), link Maps, RSVP, lista nozze, galleria con lightbox.
 - `css/style.css`: stile. `fonts/` font self-hosted (Playball, Alegreya, Alegreya SC), nessuna chiamata a Google Fonts.
 - `assets/`: `hero.jpg` (ritagliata dal Save the Date, 638 px: **sostituire con l'originale** quando c'è), `og.jpg` (anteprima WhatsApp 1200x630, rigenerare se cambia la foto), `favicon.svg`.
-- `apps-script/`: `Code.gs` (backend RSVP, da incollare nel Google Sheet), `appsscript.json`, `README.md` (installazione passo-passo), `mock.js` + `test.js` (`node apps-script/test.js`, 11 test su un finto foglio).
+- `apps-script/`: `Code.gs` (backend RSVP, da incollare nel Google Sheet), `appsscript.json`, `README.md` (installazione passo-passo), `mock.js` + `test.js` (`node apps-script/test.js`, 19 test su un finto foglio).
 - `tools/optimize_photos.py`: ridimensiona le foto, toglie i metadati GPS, stampa il blocco `photos` per `config.js`.
 - `_config.yml`: esclude da Pages CLAUDE.md, README, apps-script, tools.
 
 **Stile (deciso il 2026-10-23, riprende il Save the Date):** cielo `#8cb9ce` (sfondo del Save the Date), inchiostro `#1e3a4c`, coperta `#335c72`, carta `#f6fafc`, pesca `#e0af9e` solo per dettagli. Nomi in Playball bianco con ombra, leggermente inclinati (-3,5°) e con la "&" piccola e dritta in Alegreya, sovrapposti alla foto come sulla card (il carattere esatto del Save the Date non è noto: Playball è il più vicino trovato); doppio filetto sotto i titoli come sotto la data. L'apertura riproduce il Save the Date; il resto è sobrio su fondo chiaro.
 
-**Protocollo RSVP:** `GET <exec>?action=invite&code=XXXXXX` → `{ok, invite:{greeting, lang, people[{id,name,child,attending,diet,allergies}], message, answeredAt, deadline, closed, gift}}`; `POST <exec>` con body `text/plain` JSON `{action:'rsvp', code, message, people[{id,attending,diet,allergies}]}` → `{ok, answeredAt}` o `{ok:false, error: invalid_code|invalid_data|closed|busy}`. Il POST è `text/plain` apposta, per evitare il preflight CORS che Apps Script non gestisce.
+**Protocollo RSVP:** `GET <exec>?action=info` → `{ok, info:{deadline, closed, gift}}` (pubblico); `GET <exec>?action=invite&code=XXXXXX` → `{ok, invite:{greeting, lang, people[{id,name,child,attending,diet,allergies}], message, answeredAt, deadline, closed, gift}}`; `POST <exec>` con body `text/plain` JSON `{action:'rsvp', code?, lang, website (campo trappola, deve restare vuoto), message, people[{id?, name, child, attending, diet, allergies}]}` → `{ok, code, answeredAt, invite}` o `{ok:false, error: invalid_code|invalid_data|closed|busy|full}`. Senza `code` crea una nuova risposta; con `code` la modifica: tutte le persone già salvate devono essere nell'elenco (con `id`), quelle senza `id` vengono aggiunte, nessuna riga si cancella (chi non viene si segna "No"). Il POST è `text/plain` apposta, per evitare il preflight CORS che Apps Script non gestisce.
 
-**Anteprima senza backend:** con `rsvpApi` vuoto, `?invito=DEMO` mostra un invito finto (non salva nulla). Senza API e senza DEMO la sezione RSVP dice "aprirà a breve". Quando si imposta `rsvpApi` il DEMO smette di funzionare da solo.
+**Senza backend:** con `rsvpApi` vuoto la sezione RSVP mostra il pulsante e, cliccandolo, "aprirà a breve". Il vecchio `?invito=DEMO` non esiste più. `rsvpApi` è impostato dal 2026-10-23 (deploy Apps Script fatto da Luigi). **Dopo ogni modifica a `Code.gs` bisogna incollarlo nel foglio e rifare il deploy** (Distribuisci > Gestisci distribuzioni > Nuova versione): l'URL resta lo stesso.
 
-**Collaudi fatti (2026-10-23):** `node apps-script/test.js` (11/11); browser headless Chrome contro `Code.gs` esposto da un server locale (invio, modifica, ricarica, cambio lingua con dati a metà, errore di rete, scadenza); screenshot mobile 390 px e desktop 1280 px. **Non verificato:** il comportamento reale di CORS/redirect di Apps Script (serve il deploy), le mappe OpenStreetMap incorporate (in headless non caricavano i tile), l'anteprima del link su WhatsApp (serve il sito pubblicato), VoiceOver/TalkBack.
+**Collaudi fatti (2026-10-23):** `node apps-script/test.js` (19/19); browser headless Chrome contro `Code.gs` esposto da un server locale (invio, modifica, ricarica, cambio lingua con dati a metà, errore di rete, scadenza); screenshot mobile 390 px e desktop 1280 px. **Non verificato:** il comportamento reale di CORS/redirect di Apps Script (serve il deploy), le mappe OpenStreetMap incorporate (in headless non caricavano i tile), l'anteprima del link su WhatsApp (serve il sito pubblicato), VoiceOver/TalkBack.
 
 ## Domande aperte
 
 - **Per andare online:** (1) creare il Google Sheet e fare il deploy seguendo `apps-script/README.md`, incollare l'URL `/exec` in `js/config.js`; (2) fare una risposta di prova da telefono e controllare che arrivi nel foglio; (3) commit + push; (4) le due correzioni HTTPS/`www` qui sopra.
-- **Testi/dati mancanti:** orario del ricevimento, contatti da mostrare (la sezione compare da sola quando si riempie `contacts`), dress code, parcheggio alla chiesa, scadenza RSVP definitiva (oggi `2027-04-30` nel foglio `Config`), foto per la galleria, foto originale ad alta risoluzione per l'apertura, IBAN vero (oggi segnaposto `XXXX…` in `js/config.js`, intestatario Luigi Cagliani: con un invito valido il sito usa invece quello del foglio `Config`; se resta in `config.js` è pubblico).
+- **Testi/dati mancanti:** orario del ricevimento, contatti da mostrare (la sezione compare da sola quando si riempie `contacts`), dress code, parcheggio alla chiesa, scadenza RSVP definitiva (oggi `2027-04-30` nel foglio `Config`), foto per la galleria, foto originale ad alta risoluzione per l'apertura, IBAN vero (va scritto nel foglio `Config`, righe `iban` e `intestatario`; finché lì è vuoto il sito mostra il segnaposto `XXXX…` di `js/config.js`).
 - **Stile grafico (storico, ora superato):** gli sposi non avevano un'idea. Hanno rifiutato il visual companion del brainstorming; preferivano guardare template reali. Riferimenti mandati:
   - Editoriale minimal: https://ceremony.framer.website/ , https://darling.framer.website/ (i domini `framer.website` sono bloccati dalla rete di casa: aprire da telefono)
   - Botanico/paesaggio: Zola Galata, Eastwick, Camden (`https://www.zola.com/wedding-planning/website/design/<nome>`)
@@ -76,10 +76,10 @@ HTML/CSS/JS statico, nessuna build, nessuna dipendenza. File:
 
 ## Prossimi passi
 
-1. Guardare il sito con Luigi (`python -m http.server` nella cartella, poi `http://localhost:8000/?invito=DEMO`) e raccogliere le correzioni.
-2. Deploy del backend (vedi "Domande aperte"), prova reale, poi pubblicare.
+1. Guardare il sito con Luigi (`python -m http.server` nella cartella, poi `http://localhost:8000/`) e raccogliere le correzioni.
+2. Aggiornare lo script nel foglio con il nuovo `Code.gs` e rifare il deploy (vedi "Senza backend"), poi una risposta di prova da telefono.
 3. Riempire i dati mancanti in `js/config.js` e `js/i18n.js`; aggiungere le foto con `tools/optimize_photos.py`.
-4. Prima di mandare i link: generare i codici nel foglio, provare almeno un link su iPhone e uno su Android aperti da WhatsApp.
+4. Prima di mandare il messaggio: compilare `Config` nel foglio (scadenza, mail di notifica, IBAN), provare il sito su iPhone e su Android aperto da WhatsApp, cancellare dal foglio le risposte di prova.
 
 ## Ricerca utile
 

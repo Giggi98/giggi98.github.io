@@ -8,11 +8,11 @@
   var state = {
     lang: 'it',
     code: '',
-    view: 'entry',      // soon | entry | loading | invalid | error | form | done | closed
+    view: 'soon',       // soon | entry | loading | invalid | error | form | done | closed
     open: false,        // il modulo RSVP si apre col pulsante
-    invite: null,
-    draft: null,        // risposte in corso: sopravvivono al cambio lingua
-    demo: false
+    info: null,         // scadenza, chiusura e IBAN, letti dal foglio
+    invite: null,       // risposta già salvata (da link, dal browser o appena inviata)
+    draft: null         // risposte in corso: sopravvivono al cambio lingua
   };
 
   /* ───── Utilità ───── */
@@ -58,7 +58,8 @@
     return new Intl.DateTimeFormat(locale(), { dateStyle: 'long', timeZone: 'Europe/Rome' }).format(date);
   }
   function fmtDeadline() {
-    var d = state.invite && state.invite.deadline;
+    var src = state.invite || state.info;
+    var d = src && src.deadline;
     if (!d) return '';
     var p = d.split('-');
     return new Intl.DateTimeFormat(locale(), { dateStyle: 'long', timeZone: 'UTC' })
@@ -197,44 +198,22 @@
     link.setAttribute('download', 'matrimonio-lucia-luigi.ics');
   }
 
-  /* ───── Invito personale e RSVP ───── */
+  /* ───── RSVP ───── */
 
-  function demoInvite() {
-    return {
-      greeting: state.lang === 'en' ? 'Demo family' : 'Famiglia Demo',
-      lang: state.lang,
-      people: [
-        { id: 'd1', name: 'Anna', child: false, attending: null, diet: 'none', allergies: '' },
-        { id: 'd2', name: 'Marco', child: false, attending: null, diet: 'none', allergies: '' },
-        { id: 'd3', name: 'Sofia', child: true, attending: null, diet: 'none', allergies: '' }
-      ],
-      message: '',
-      answeredAt: null,
-      deadline: '2027-04-30',
-      closed: false,
-      gift: { iban: 'XXXXXXXXXXXXXXXXXXXXXXXXXXX', holder: 'Luigi Cagliani' }
-    };
-  }
+  var MAX_PEOPLE = 12;           // uguale al limite di Code.gs
+  var SAVED_KEY = 'rsvp_code';   // codice dell'ultima risposta inviata da questo browser
+  var rowCounter = 0;
 
   function apiUrl(params) {
     var base = SITE.rsvpApi;
     return base + (base.indexOf('?') === -1 ? '?' : '&') + new URLSearchParams(params).toString();
   }
 
-  function fetchInvite(code) {
-    if (!SITE.rsvpApi) {
-      return Promise.resolve(code === 'DEMO' ? { ok: true, invite: demoInvite() } : { ok: false, error: 'invalid_code' });
-    }
-    return fetch(apiUrl({ action: 'invite', code: code }))
-      .then(function (r) { return r.json(); });
+  function getJson(params) {
+    return fetch(apiUrl(params)).then(function (r) { return r.json(); });
   }
 
   function sendRsvp(payload) {
-    if (!SITE.rsvpApi) {
-      return new Promise(function (resolve) {
-        setTimeout(function () { resolve({ ok: true, answeredAt: new Date().toISOString() }); }, 400);
-      });
-    }
     // text/plain evita la richiesta preliminare CORS, che Apps Script non gestisce.
     return fetch(SITE.rsvpApi, {
       method: 'POST',
@@ -243,14 +222,48 @@
     }).then(function (r) { return r.json(); });
   }
 
-  function loadInvite(code) {
+  function newRow() {
+    return { key: ++rowCounter, id: '', name: '', child: false, attending: null, diet: 'none', allergies: '' };
+  }
+
+  function blankDraft() { return { people: [newRow()], message: '' }; }
+
+  function draftFrom(inv) {
+    return {
+      people: inv.people.map(function (p) {
+        return { key: ++rowCounter, id: p.id, name: p.name, child: !!p.child, attending: p.attending || null,
+                 diet: p.diet || 'none', allergies: p.allergies || '' };
+      }),
+      message: inv.message || ''
+    };
+  }
+
+  function inviteUrl(code) {
+    return window.location.origin + window.location.pathname + '?invito=' + code;
+  }
+
+  function setUrlCode(code) {
+    try {
+      var url = new URL(window.location.href);
+      if (code) url.searchParams.set('invito', code); else url.searchParams.delete('invito');
+      window.history.replaceState(null, '', url);
+    } catch (e) { /* l'indirizzo resta com'è */ }
+  }
+
+  // Apre una risposta già inviata. `silent`: il codice viene dalla memoria del browser, non da un link o da chi l'ha scritto.
+  function loadInvite(code, silent) {
     state.code = code;
-    state.demo = !SITE.rsvpApi && code === 'DEMO';
     state.view = 'loading';
     renderRsvp();
-    fetchInvite(code).then(function (res) {
+    getJson({ action: 'invite', code: code }).then(function (res) {
       if (!res || !res.ok) {
-        state.view = res && res.error === 'invalid_code' ? 'invalid' : 'error';
+        if (silent) {
+          store(SAVED_KEY, '');
+          state.code = '';
+          state.view = 'form';
+        } else {
+          state.view = res && res.error === 'invalid_code' ? 'invalid' : 'error';
+        }
         state.invite = null;
       } else {
         state.invite = res.invite;
@@ -263,17 +276,10 @@
       }
       renderDynamic();
     }).catch(function () {
-      state.view = 'error';
+      state.view = silent ? 'form' : 'error';
+      if (silent) state.code = '';
       renderDynamic();
     });
-  }
-
-  function draftFrom(inv) {
-    var people = {};
-    inv.people.forEach(function (p) {
-      people[p.id] = { attending: p.attending || null, diet: p.diet || 'none', allergies: p.allergies || '' };
-    });
-    return { people: people, message: inv.message || '' };
   }
 
   function renderGreeting() {
@@ -286,12 +292,14 @@
     }
   }
 
+  function deadlineSource() { return state.invite || state.info; }
+
   function renderIntro() {
     var intro = $('#rsvp-intro');
-    var inv = state.invite;
+    var src = deadlineSource();
     if (state.view === 'soon') intro.textContent = '';
-    else if (inv && inv.closed) intro.textContent = t('rsvp.introClosed', { deadline: fmtDeadline() });
-    else if (inv) intro.textContent = t('rsvp.intro', { deadline: fmtDeadline() });
+    else if (src && src.closed) intro.textContent = t('rsvp.introClosed', { deadline: fmtDeadline() });
+    else if (src && src.deadline) intro.textContent = t('rsvp.intro', { deadline: fmtDeadline() });
     else intro.textContent = t('rsvp.introNoDate');
   }
 
@@ -319,43 +327,48 @@
   function viewSoon() { return h('p', { text: t('rsvp.soon') }); }
   function viewLoading() { return h('p', { text: t('rsvp.loading') }); }
 
-  function viewEntry(message) {
+  function backToForm() {
+    state.view = 'form';
+    state.code = '';
+    state.invite = null;
+    state.draft = state.draft || blankDraft();
+    setUrlCode('');
+    renderDynamic();
+  }
+
+  function viewEntry() {
     var input = h('input', { id: 'code-input', type: 'text', autocomplete: 'off', autocapitalize: 'characters',
       spellcheck: 'false', maxlength: '20', 'aria-describedby': 'code-help' });
-    return h('form', { class: 'codeform', onsubmit: function (e) {
-        e.preventDefault();
-        var code = input.value.replace(/\s+/g, '').toUpperCase();
-        if (!code) { input.focus(); return; }
-        var url = new URL(window.location.href);
-        url.searchParams.set('invito', code);
-        window.history.replaceState(null, '', url);
-        loadInvite(code);
-      } },
-      h('div', { class: 'field' },
-        h('label', { for: 'code-input', text: t('rsvp.codeLabel') }),
-        input),
-      h('button', { type: 'submit', class: 'btn', text: t('rsvp.codeButton') }),
-      h('p', { class: 'field__help', id: 'code-help', text: t('rsvp.codeHelp') }),
-      message || null);
+    return h('div', null,
+      h('form', { class: 'codeform', onsubmit: function (e) {
+          e.preventDefault();
+          var code = input.value.replace(/\s+/g, '').toUpperCase();
+          if (!code) { input.focus(); return; }
+          setUrlCode(code);
+          loadInvite(code, false);
+        } },
+        h('div', { class: 'field' },
+          h('label', { for: 'code-input', text: t('rsvp.codeLabel') }),
+          input),
+        h('button', { type: 'submit', class: 'btn', text: t('rsvp.codeButton') }),
+        h('p', { class: 'field__help', id: 'code-help', text: t('rsvp.codeHelp') })),
+      h('p', { style: 'margin-top:1.2rem' },
+        h('button', { type: 'button', class: 'linkbtn', onclick: backToForm, text: t('rsvp.backToForm') })));
   }
 
   function viewInvalid() {
     return h('div', null,
       h('div', { class: 'msg msg--error', role: 'alert', text: t('rsvp.invalid') }),
-      h('p', null, h('button', { type: 'button', class: 'linkbtn', onclick: function () {
-        state.view = 'entry'; state.code = '';
-        var url = new URL(window.location.href);
-        url.searchParams.delete('invito');
-        window.history.replaceState(null, '', url);
-        renderRsvp();
-      }, text: t('rsvp.codeButton') })));
+      h('p', { style: 'margin-top:1rem' },
+        h('button', { type: 'button', class: 'linkbtn', onclick: function () { state.view = 'entry'; renderRsvp(); }, text: t('rsvp.codeButton') })),
+      h('p', null, h('button', { type: 'button', class: 'linkbtn', onclick: backToForm, text: t('rsvp.backToForm') })));
   }
 
   function viewError() {
     return h('div', null,
       h('div', { class: 'msg msg--error', role: 'alert', text: t('rsvp.loadError') }),
       h('p', { style: 'margin-top:1rem' },
-        h('button', { type: 'button', class: 'btn', onclick: function () { loadInvite(state.code); }, text: t('rsvp.retry') })));
+        h('button', { type: 'button', class: 'btn', onclick: function () { loadInvite(state.code, false); }, text: t('rsvp.retry') })));
   }
 
   var DIETS = ['none', 'vegetarian', 'vegan'];
@@ -363,54 +376,94 @@
     return t({ none: 'rsvp.dietNone', vegetarian: 'rsvp.dietVegetarian', vegan: 'rsvp.dietVegan' }[d]);
   }
 
-  function personFieldset(p, i) {
-    var d = state.draft.people[p.id];
+  function personLabel(p, i) {
+    return p.name.trim() || (i === 0 ? t('rsvp.you') : t('rsvp.person', { n: i + 1 }));
+  }
+
+  function personFieldset(p, i, onRemove) {
     var details;
+    var fixed = !!p.id && !!p.name;   // persona già salvata: il nome resta quello
 
     function option(value, key) {
       return h('label', null,
-        h('input', { type: 'radio', name: 'att-' + p.id, value: value, checked: d.attending === value,
-          onchange: function () { d.attending = value; details.hidden = value !== 'yes'; } }),
+        h('input', { type: 'radio', name: 'att-' + p.key, value: value, checked: p.attending === value,
+          onchange: function () { p.attending = value; details.hidden = value !== 'yes'; } }),
         h('span', { text: t(key) }));
     }
 
-    var dietSelect = h('select', { id: 'diet-' + i, onchange: function (e) { d.diet = e.target.value; } },
-      DIETS.map(function (v) { return h('option', { value: v, selected: d.diet === v, text: dietLabel(v) }); }));
-    var allergies = h('input', { id: 'allergies-' + i, type: 'text', maxlength: '300', value: d.allergies,
-      autocomplete: 'off', 'aria-describedby': 'allergies-help-' + i,
-      oninput: function (e) { d.allergies = e.target.value; } });
-
-    details = h('div', { class: 'details', hidden: d.attending !== 'yes' },
-      h('div', { class: 'field' }, h('label', { for: 'diet-' + i, text: t('rsvp.diet') }), dietSelect),
+    details = h('div', { class: 'details', hidden: p.attending !== 'yes' },
       h('div', { class: 'field' },
-        h('label', { for: 'allergies-' + i },
+        h('label', { for: 'diet-' + p.key, text: t('rsvp.diet') }),
+        h('select', { id: 'diet-' + p.key, onchange: function (e) { p.diet = e.target.value; } },
+          DIETS.map(function (v) { return h('option', { value: v, selected: p.diet === v, text: dietLabel(v) }); }))),
+      h('div', { class: 'field' },
+        h('label', { for: 'allergies-' + p.key },
           t('rsvp.allergies'),
-          h('span', { class: 'field__help', id: 'allergies-help-' + i, text: t('rsvp.allergiesHelp') })),
-        allergies));
+          h('span', { class: 'field__help', id: 'allergies-help-' + p.key, text: t('rsvp.allergiesHelp') })),
+        h('input', { id: 'allergies-' + p.key, type: 'text', maxlength: '300', value: p.allergies,
+          autocomplete: 'off', 'aria-describedby': 'allergies-help-' + p.key,
+          oninput: function (e) { p.allergies = e.target.value; } })));
 
-    return h('fieldset', { class: 'person', 'data-id': p.id },
-      h('legend', null, p.name, p.child ? h('span', { class: 'badge', text: t('rsvp.child') }) : null),
+    return h('fieldset', { class: 'person', 'data-key': p.key },
+      h('legend', { text: fixed ? p.name : (i === 0 ? t('rsvp.you') : t('rsvp.person', { n: i + 1 })) }),
+      fixed ? null : h('div', { class: 'field' },
+        h('label', { for: 'name-' + p.key, text: i === 0 ? t('rsvp.nameFirst') : t('rsvp.name') }),
+        h('input', { id: 'name-' + p.key, type: 'text', maxlength: '100', value: p.name,
+          autocomplete: i === 0 ? 'name' : 'off',
+          oninput: function (e) { p.name = e.target.value; } })),
+      h('label', { class: 'check' },
+        h('input', { type: 'checkbox', checked: p.child, onchange: function (e) { p.child = e.target.checked; } }),
+        h('span', { text: t('rsvp.child') })),
       h('div', { class: 'choice' }, option('yes', 'rsvp.yes'), option('no', 'rsvp.no')),
-      details);
+      details,
+      onRemove ? h('p', { class: 'person__remove' },
+        h('button', { type: 'button', class: 'linkbtn', onclick: onRemove, text: t('rsvp.remove') })) : null);
   }
 
   function viewForm() {
     var inv = state.invite;
-    var answered = !!inv.answeredAt;
+    var answered = !!(inv && inv.answeredAt);
+    var draft = state.draft;
 
     var errorBox = h('div', { id: 'rsvp-error', role: 'alert' });
     var button = h('button', { type: 'submit', class: 'btn', id: 'rsvp-submit', text: answered ? t('rsvp.update') : t('rsvp.submit') });
+    var trap = h('input', { type: 'text', name: 'nickname_check', tabindex: '-1', autocomplete: 'off', 'aria-hidden': 'true' });
+    var people = h('div', { id: 'rsvp-people' });
+    var addButton = h('button', { type: 'button', class: 'btn btn--ghost', id: 'rsvp-add', text: t('rsvp.addPerson'),
+      onclick: function () {
+        var row = newRow();
+        draft.people.push(row);
+        renderPeople();
+        var input = document.getElementById('name-' + row.key);
+        if (input) input.focus();
+      } });
+
+    function renderPeople() {
+      people.replaceChildren.apply(people, draft.people.map(function (p, i) {
+        var removable = i > 0 && !p.id;
+        return personFieldset(p, i, removable ? function () {
+          draft.people.splice(draft.people.indexOf(p), 1);
+          renderPeople();
+        } : null);
+      }));
+      addButton.hidden = draft.people.length >= MAX_PEOPLE;
+    }
+    renderPeople();
 
     var form = h('form', { novalidate: true, onsubmit: function (e) {
       e.preventDefault();
       errorBox.replaceChildren();
 
-      var missing = inv.people.filter(function (p) { return !state.draft.people[p.id].attending; })[0];
-      if (missing) {
-        errorBox.append(h('div', { class: 'msg msg--error', text: t('rsvp.missing', { name: missing.name }) }));
-        var first = form.querySelector('fieldset[data-id="' + missing.id + '"] input');
-        if (first) first.focus();
-        return;
+      function problem(text, selector) {
+        errorBox.append(h('div', { class: 'msg msg--error', text: text }));
+        var el = form.querySelector(selector);
+        if (el) el.focus();
+      }
+
+      for (var i = 0; i < draft.people.length; i++) {
+        var p = draft.people[i];
+        if (!p.name.trim()) { problem(t('rsvp.nameMissing'), '#name-' + p.key); return; }
+        if (!p.attending) { problem(t('rsvp.missing', { name: personLabel(p, i) }), 'fieldset[data-key="' + p.key + '"] input[type="radio"]'); return; }
       }
 
       button.disabled = true;
@@ -418,32 +471,36 @@
       sendRsvp({
         action: 'rsvp',
         code: state.code,
-        message: state.draft.message,
-        people: inv.people.map(function (p) {
-          var d = state.draft.people[p.id];
-          return { id: p.id, attending: d.attending,
-                   diet: d.attending === 'yes' ? d.diet : 'none',
-                   allergies: d.attending === 'yes' ? d.allergies.trim() : '' };
+        lang: state.lang,
+        website: trap.value,
+        message: draft.message,
+        people: draft.people.map(function (p) {
+          return { id: p.id || undefined, name: p.name.trim(), child: p.child, attending: p.attending,
+                   diet: p.attending === 'yes' ? p.diet : 'none',
+                   allergies: p.attending === 'yes' ? p.allergies.trim() : '' };
         })
       }).then(function (res) {
-        if (res && res.ok) {
-          inv.answeredAt = res.answeredAt || new Date().toISOString();
-          inv.message = state.draft.message;
-          inv.people.forEach(function (p) {
-            var d = state.draft.people[p.id];
-            p.attending = d.attending;
-            p.diet = d.attending === 'yes' ? d.diet : 'none';
-            p.allergies = d.attending === 'yes' ? d.allergies.trim() : '';
-          });
-          state.draft = draftFrom(inv);
+        if (res && res.ok && res.invite) {
+          state.code = res.code;
+          state.invite = res.invite;
+          state.draft = draftFrom(res.invite);
+          store(SAVED_KEY, res.code);
+          setUrlCode(res.code);
           state.view = 'done';
-          renderRsvp();
+          renderDynamic();
           var done = $('#rsvp-done');
           if (done) done.focus();
           return;
         }
-        var key = { closed: 'rsvp.closedError', busy: 'rsvp.busyError', invalid_code: 'rsvp.invalid' }[res && res.error] || 'rsvp.saveError';
-        if (res && res.error === 'closed') { inv.closed = true; state.view = 'closed'; renderRsvp(); return; }
+        if (res && res.ok) { fail('rsvp.saveError'); return; }   // risposta scartata dal campo trappola
+        if (res && res.error === 'closed') {
+          state.info = Object.assign({}, state.info, { closed: true });
+          if (state.invite) state.invite.closed = true;
+          state.view = 'closed';
+          renderDynamic();
+          return;
+        }
+        var key = { busy: 'rsvp.busyError', full: 'rsvp.fullError', invalid_code: 'rsvp.invalid' }[res && res.error] || 'rsvp.saveError';
         fail(key);
       }).catch(function () { fail('rsvp.saveError'); });
 
@@ -453,16 +510,22 @@
         errorBox.replaceChildren(h('div', { class: 'msg msg--error', text: t(key) }));
       }
     } },
-      h('p', { class: 'sheet__hello', text: t('rsvp.hello', { name: inv.greeting }) }),
-      state.demo ? h('div', { class: 'msg msg--demo', text: t('rsvp.demo') }) : null,
+      answered ? h('p', { class: 'sheet__hello', text: t('rsvp.hello', { name: inv.greeting }) }) : null,
       answered ? h('p', { class: 'sheet__note', text: t('rsvp.answeredOn', { date: fmtLong(new Date(inv.answeredAt)), deadline: fmtDeadline() }) }) : null,
-      inv.people.map(personFieldset),
+      h('p', { class: 'sheet__note', text: t('rsvp.formHelp') }),
+      h('div', { class: 'hp', 'aria-hidden': 'true' }, trap),
+      people,
+      h('p', { style: 'margin-top:.4rem' }, addButton),
       h('div', { class: 'field', style: 'margin-top:1.3rem' },
         h('label', { for: 'rsvp-message', text: t('rsvp.message') }),
-        h('textarea', { id: 'rsvp-message', maxlength: '1000', text: state.draft.message,
-          oninput: function (e) { state.draft.message = e.target.value; } })),
+        h('textarea', { id: 'rsvp-message', maxlength: '1000', text: draft.message,
+          oninput: function (e) { draft.message = e.target.value; } })),
       h('div', { class: 'sheet__foot' }, errorBox, button));
-    return form;
+
+    return h('div', null,
+      form,
+      answered ? null : h('p', { style: 'margin-top:1.2rem' },
+        h('button', { type: 'button', class: 'linkbtn', onclick: function () { state.view = 'entry'; renderRsvp(); }, text: t('rsvp.haveCode') })));
   }
 
   function summaryList(inv) {
@@ -479,11 +542,20 @@
   function viewDone() {
     var inv = state.invite;
     var anyYes = inv.people.some(function (p) { return p.attending === 'yes'; });
+    var url = inviteUrl(state.code);
+    var status = h('p', { class: 'field__help', role: 'status' });
     return h('div', null,
       h('div', { class: 'msg', id: 'rsvp-done', tabindex: '-1', role: 'status' },
         h('p', null, h('strong', { text: t('rsvp.saved') })),
         h('p', { text: t(anyYes ? 'rsvp.savedYes' : 'rsvp.savedNo') })),
       summaryList(inv),
+      h('div', { class: 'linkbox' },
+        h('p', { text: t('rsvp.keepLink') }),
+        h('p', { class: 'linkbox__url', text: url }),
+        h('button', { type: 'button', class: 'btn btn--ghost', text: t('rsvp.copyLink'), onclick: function () {
+          copyText(url, function () { status.textContent = t('rsvp.linkCopied'); }, function () { status.textContent = t('gift.copyError'); });
+        } }),
+        status),
       h('p', { style: 'margin-top:1.2rem' },
         h('button', { type: 'button', class: 'linkbtn', onclick: function () { state.view = 'form'; renderRsvp(); }, text: t('rsvp.changeLink') })));
   }
@@ -491,17 +563,30 @@
   function viewClosed() {
     var inv = state.invite;
     return h('div', null,
-      inv.answeredAt ? summaryList(inv) : null,
+      inv && inv.answeredAt ? summaryList(inv) : null,
       h('div', { class: 'msg', text: t('rsvp.closedNote') }));
+  }
+
+  function copyText(text, done, fail) {
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(text).then(done, fail);
+    } else {
+      var ta = h('textarea', { 'aria-hidden': 'true', style: 'position:fixed;opacity:0' });
+      ta.value = text;
+      document.body.append(ta);
+      ta.select();
+      try { document.execCommand('copy') ? done() : fail(); } catch (e) { fail(); }
+      ta.remove();
+    }
   }
 
   /* ───── Regalo di nozze ───── */
 
   function groupIban(s) { return s.replace(/\s+/g, '').replace(/(.{4})/g, '$1 ').trim(); }
 
-  // Con un invito valido l'IBAN arriva dal foglio; altrimenti si usa quello in config.js.
+  // L'IBAN arriva dal foglio; finché lì è vuoto si usa il segnaposto di config.js.
   function currentGift() {
-    var gift = (state.invite && state.invite.gift) || SITE.gift;
+    var gift = (state.invite && state.invite.gift) || (state.info && state.info.gift) || SITE.gift;
     return gift && gift.iban ? gift : null;
   }
 
@@ -529,18 +614,9 @@
       var gift = currentGift();
       var iban = gift && gift.iban.replace(/\s+/g, '');
       if (!iban) return;
-      var done = function () { status.textContent = t('gift.copied'); };
-      var fail = function () { status.textContent = t('gift.copyError'); };
-      if (navigator.clipboard && window.isSecureContext) {
-        navigator.clipboard.writeText(iban).then(done, fail);
-      } else {
-        var ta = h('textarea', { 'aria-hidden': 'true', style: 'position:fixed;opacity:0' });
-        ta.value = iban;
-        document.body.append(ta);
-        ta.select();
-        try { document.execCommand('copy') ? done() : fail(); } catch (e) { fail(); }
-        ta.remove();
-      }
+      copyText(iban,
+        function () { status.textContent = t('gift.copied'); },
+        function () { status.textContent = t('gift.copyError'); });
     });
   }
 
@@ -617,16 +693,25 @@
     applyI18n();
 
     var code = (new URLSearchParams(window.location.search).get('invito') || '').replace(/\s+/g, '').toUpperCase();
-    if (!SITE.rsvpApi && code !== 'DEMO') {
+    if (!SITE.rsvpApi) {
       state.view = 'soon';
       renderDynamic();
-    } else if (code) {
-      renderDynamic();
-      loadInvite(code);
-    } else {
-      state.view = 'entry';
-      renderDynamic();
+      return;
     }
+
+    state.view = 'form';
+    state.draft = blankDraft();
+    renderDynamic();
+
+    getJson({ action: 'info' }).then(function (res) {
+      if (!res || !res.ok) return;
+      state.info = res.info;
+      if (state.view === 'form' && !state.invite && res.info.closed) state.view = 'closed';
+      renderDynamic();
+    }).catch(function () { /* senza info il sito funziona lo stesso */ });
+
+    var remembered = code || store(SAVED_KEY);
+    if (remembered) loadInvite(remembered, !code);
   }
 
   init();
