@@ -9,6 +9,7 @@
     lang: 'it',
     code: '',
     view: 'entry',      // soon | entry | loading | invalid | error | form | done | closed
+    open: false,        // il modulo RSVP si apre col pulsante
     invite: null,
     draft: null,        // risposte in corso: sopravvivono al cambio lingua
     demo: false
@@ -306,6 +307,17 @@
     var views = { soon: viewSoon, entry: viewEntry, loading: viewLoading, invalid: viewInvalid,
                   error: viewError, form: viewForm, done: viewDone, closed: viewClosed };
     var focused = document.activeElement && root.contains(document.activeElement) ? document.activeElement.id : '';
+    if (!state.open && state.view !== 'soon' && state.view !== 'closed') {
+      root.className = 'rsvp-cta';
+      root.replaceChildren(h('button', { type: 'button', class: 'btn btn--light', id: 'rsvp-open', onclick: function () {
+        state.open = true;
+        renderRsvp();
+        var first = root.querySelector('input, button, textarea');
+        if (first) first.focus();
+      }, text: t('rsvp.open') }));
+      return;
+    }
+    root.className = 'sheet';
     root.replaceChildren(views[state.view]());
     if (focused) { var again = document.getElementById(focused); if (again) again.focus(); }
   }

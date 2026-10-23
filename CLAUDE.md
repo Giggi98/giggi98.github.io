@@ -6,12 +6,11 @@ Contesto per Claude Code: stato del progetto e decisioni prese finora. Lingua di
 
 - Repo `Giggi98/giggi98.github.io`, GitHub Pages dal branch `main` (root), dominio `luciegigi.it` (file CNAME).
 - Dominio registrato su register.it a settembre 2026 per un anno: scade intorno a settembre 2027 (copre il matrimonio; rinnovare se si vuole tenere il sito dopo).
-- **Sito scritto il 2026-10-23** (non ancora pubblicato: nessun commit/push fatto, finché Luigi non lo chiede). L'utente ha scelto di saltare brainstorming e spec e di partire direttamente. Vedi "Com'è fatto il sito" in basso.
+- **Sito scritto il 2026-10-23**, pubblicato su luciegigi.it con il commit `ee2709e`; "Enforce HTTPS" attivato il 2026-10-23. L'utente ha scelto di saltare brainstorming e spec e di partire direttamente. Vedi "Com'è fatto il sito" in basso.
 
 ## Correzioni tecniche da fare (non ancora fatte)
 
-1. Attivare "Enforce HTTPS" nelle impostazioni Pages della repo (oggi `http://luciegigi.it` non reindirizza a https).
-2. Su register.it cambiare il record CNAME `www` da `luciegigi.it` a `giggi98.github.io.`: oggi `https://www.luciegigi.it` dà errore di certificato.
+1. Su register.it cambiare il record CNAME `www` da `luciegigi.it` a `giggi98.github.io.`: oggi `https://www.luciegigi.it` dà errore di certificato.
 
 ## Dati dell'evento
 
@@ -20,7 +19,7 @@ Contesto per Claude Code: stato del progetto e decisioni prese finora. Lingua di
 - Cerimonia: **Chiesa di Santa Maria Assunta in Borgo**, via Giuseppe Mazzini 51, 24027 Nembro (BG). Chiesa del Quattrocento (completata 1456), famosa per gli affreschi. Coordinate 45.7449407, 9.7612093.
 - Ricevimento: **Castello di Monasterolo**, Piazzetta Contessa V. Terni de Gregori 1, 24060 Monasterolo del Castello (BG), sul Lago di Endine; parco botanico con 700+ specie, siepi scolpite, piscina in marmo. Coordinate 45.7583456, 9.9184287.
 - Chiesa → castello: ~21,5 km, 30-35 minuti in auto (Val Cavallina).
-- Aeroporto più vicino: Bergamo Orio al Serio, a pochi km da Nembro (utile nelle FAQ per gli ospiti inglesi).
+- Aeroporto più vicino: Bergamo Orio al Serio, a pochi km da Nembro (utile per gli ospiti inglesi).
 - Orari: **ancora da ricevere** dagli sposi.
 
 ## Decisioni prese
@@ -35,7 +34,7 @@ Contesto per Claude Code: stato del progetto e decisioni prese finora. Lingua di
   - Scartati: navetta, alloggio, canzone.
 - **Backend RSVP:** Google Sheet + Google Apps Script (web app) che riceve le risposte dal sito. Gratuito; il foglio si scarica in Excel. Lista invitati, codici e risposte vivono solo nel foglio.
 - **Privacy: "pubblico ma discreto".** Informazioni generali visibili a chiunque abbia l'indirizzo; `noindex` (fuori da Google); IBAN e dati invitati solo nel foglio Google, restituiti dallo script solo a chi ha un codice invito valido. **La repo è pubblica: mai mettere IBAN, lista invitati o altri dati personali nel codice.**
-- **Sezioni:** copertina (nomi, data, countdown, "aggiungi al calendario"), programma, **La Chiesa** (orario, indirizzo, "Apri in Maps", mappa, parcheggio), **Il Ricevimento** (idem + percorso dalla chiesa), RSVP, lista nozze (IBAN con pulsante "copia", solo con link personale), FAQ (dress code, bambini, aeroporto…), contatti, **galleria foto**. Scartate: "la nostra storia", "come arrivare e dormire" generale, foto degli ospiti con QR.
+- **Sezioni:** copertina (nomi, data, countdown, "aggiungi al calendario"), programma, **La Chiesa** (orario, indirizzo, "Apri in Maps", mappa, parcheggio), **Il Ricevimento** (idem + percorso dalla chiesa), RSVP (sezione con pulsante "RSVP" che apre il modulo; il pulsante manca solo se l'RSVP è "in arrivo" o chiuso), lista nozze (IBAN con pulsante "copia", solo con link personale), contatti, **galleria foto**. Scartate: la sezione FAQ (tolta il 2026-10-23), "la nostra storia", "come arrivare e dormire" generale, foto degli ospiti con QR.
 - **Foto:** in una cartella Google Drive dell'utente (Drive non è sincronizzato sul PC: andranno scaricate come zip). Da ridimensionare/ottimizzare per il web prima di metterle nel sito.
 - **Assunzioni:** gli ospiti aprono il link da telefono via WhatsApp (mobile-first, anteprima link Open Graph curata); nessun costo oltre al dominio.
 
@@ -64,14 +63,14 @@ HTML/CSS/JS statico, nessuna build, nessuna dipendenza. File:
 ## Domande aperte
 
 - **Per andare online:** (1) creare il Google Sheet e fare il deploy seguendo `apps-script/README.md`, incollare l'URL `/exec` in `js/config.js`; (2) fare una risposta di prova da telefono e controllare che arrivi nel foglio; (3) commit + push; (4) le due correzioni HTTPS/`www` qui sopra.
-- **Testi/dati mancanti:** orario del ricevimento, contatti da mostrare (la sezione compare da sola quando si riempie `contacts`), dress code (nessuna FAQ scritta perché non lo sappiamo), parcheggio alla chiesa, FAQ sui bambini, scadenza RSVP definitiva (oggi `2027-04-30` nel foglio `Config`), foto per la galleria, foto originale ad alta risoluzione per l'apertura, testo definitivo della lista nozze (oggi generico: "Il regalo più bello è averti con noi…").
+- **Testi/dati mancanti:** orario del ricevimento, contatti da mostrare (la sezione compare da sola quando si riempie `contacts`), dress code, parcheggio alla chiesa, scadenza RSVP definitiva (oggi `2027-04-30` nel foglio `Config`), foto per la galleria, foto originale ad alta risoluzione per l'apertura, testo definitivo della lista nozze (oggi generico: "Il regalo più bello è averti con noi…").
 - **Stile grafico (storico, ora superato):** gli sposi non avevano un'idea. Hanno rifiutato il visual companion del brainstorming; preferivano guardare template reali. Riferimenti mandati:
   - Editoriale minimal: https://ceremony.framer.website/ , https://darling.framer.website/ (i domini `framer.website` sono bloccati dalla rete di casa: aprire da telefono)
   - Botanico/paesaggio: Zola Galata, Eastwick, Camden (`https://www.zola.com/wedding-planning/website/design/<nome>`)
   - Classico elegante: Zola Abbey, Verona (`.../design/abbey`, `.../design/verona-black`)
   - Romantico morbido: https://noahsabrinalove.framer.website/
   - Solo funzionamento RSVP a codice: https://wedding.rampatra.com (codice 271117)
-- Orari di cerimonia e ricevimento; testi (FAQ, dress code); contatti da mostrare; IBAN e intestatario (andranno nel foglio, non qui).
+- Orari di cerimonia e ricevimento; testi (dress code); contatti da mostrare; IBAN e intestatario (andranno nel foglio, non qui).
 
 ## Prossimi passi
 

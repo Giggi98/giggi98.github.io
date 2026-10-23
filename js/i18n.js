@@ -12,7 +12,6 @@ window.I18N = {
     'nav.reception': 'Ricevimento',
     'nav.rsvp': 'Conferma',
     'nav.gift': 'Lista nozze',
-    'nav.faq': 'Domande',
     'nav.contacts': 'Contatti',
     'nav.gallery': 'Foto',
 
@@ -58,6 +57,7 @@ window.I18N = {
     'maps.route': 'Percorso dalla chiesa',
 
     'rsvp.title': 'Conferma la tua presenza',
+    'rsvp.open': 'RSVP',
     'rsvp.intro': 'Rispondi dal tuo invito personale. Puoi cambiare risposta quando vuoi, fino al {deadline}.',
     'rsvp.introNoDate': 'Rispondi dal tuo invito personale. Potrai cambiare risposta anche dopo averla inviata.',
     'rsvp.introClosed': 'Le risposte sono chiuse dal {deadline}.',
@@ -106,17 +106,6 @@ window.I18N = {
     'gift.copied': 'IBAN copiato',
     'gift.copyError': 'Non riusciamo a copiarlo: selezionalo e copialo a mano.',
 
-    'faq.title': 'Domande frequenti',
-    'faq.q1': 'Posso cambiare la risposta dopo averla inviata?',
-    'faq.a1': 'Sì. Riapri il tuo link personale e aggiorna la risposta, tutte le volte che vuoi, fino alla scadenza indicata nella sezione “Conferma la tua presenza”.',
-    'faq.q2': 'Chi è invitato?',
-    'faq.a2': 'Le persone elencate nel tuo invito personale. Se qualcosa non torna, scrivici e sistemiamo.',
-    'faq.q3': 'Come comunico allergie e intolleranze?',
-    'faq.a3': 'Direttamente nel modulo di conferma, accanto al nome di ciascuna persona.',
-    'faq.q4': 'Quanto distano la chiesa e il ricevimento?',
-    'faq.a4': 'Circa 21,5 km, 30-35 minuti in auto attraverso la Val Cavallina. Nella sezione “Il ricevimento” trovi il percorso da aprire nelle mappe.',
-    'faq.q5': 'Arrivo in aereo: qual è l’aeroporto più vicino?',
-    'faq.a5': 'Bergamo Orio al Serio, a pochi chilometri da Nembro.',
 
     'contacts.title': 'Contatti',
     'contacts.text': 'Per qualsiasi dubbio scrivici o chiamaci.',
@@ -146,7 +135,6 @@ window.I18N = {
     'nav.reception': 'Reception',
     'nav.rsvp': 'RSVP',
     'nav.gift': 'Gift list',
-    'nav.faq': 'FAQ',
     'nav.contacts': 'Contacts',
     'nav.gallery': 'Photos',
 
@@ -192,6 +180,7 @@ window.I18N = {
     'maps.route': 'Route from the church',
 
     'rsvp.title': 'Will you join us?',
+    'rsvp.open': 'RSVP',
     'rsvp.intro': 'Answer from your personal invitation. You can change your answer any time until {deadline}.',
     'rsvp.introNoDate': 'Answer from your personal invitation. You’ll be able to change your answer after sending it.',
     'rsvp.introClosed': 'Replies have been closed since {deadline}.',
@@ -240,17 +229,6 @@ window.I18N = {
     'gift.copied': 'IBAN copied',
     'gift.copyError': 'We can’t copy it for you: select it and copy it by hand.',
 
-    'faq.title': 'Questions',
-    'faq.q1': 'Can I change my answer after sending it?',
-    'faq.a1': 'Yes. Open your personal link again and update your answer as often as you like, until the date shown in the “Will you join us?” section.',
-    'faq.q2': 'Who is invited?',
-    'faq.a2': 'The people listed on your personal invitation. If something looks wrong, get in touch and we’ll sort it out.',
-    'faq.q3': 'How do I tell you about allergies and intolerances?',
-    'faq.a3': 'Directly in the RSVP form, next to each person’s name.',
-    'faq.q4': 'How far apart are the church and the reception?',
-    'faq.a4': 'About 21.5 km, a 30-35 minute drive through the Val Cavallina. In “The reception” you’ll find the route to open in your maps app.',
-    'faq.q5': 'I’m flying in: which is the nearest airport?',
-    'faq.a5': 'Bergamo Orio al Serio, a few kilometres from Nembro.',
 
     'contacts.title': 'Contacts',
     'contacts.text': 'For anything at all, write or call us.',
