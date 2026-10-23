@@ -25,6 +25,11 @@ window.SITE = {
     time: ''
   },
 
+  // Regalo di nozze: segnaposto, da sostituire con l'IBAN vero.
+  // Attenzione: la repo è pubblica, quello che scrivi qui lo vede chiunque. Se vuoi che l'IBAN lo vedano
+  // solo gli invitati con il link personale, lascia qui il segnaposto e mettilo nel foglio Google (foglio Config).
+  gift: { holder: 'Luigi Cagliani', iban: 'XXXXXXXXXXXXXXXXXXXXXXXXXXX' },
+
   // Contatti: la sezione compare solo se c'è almeno un contatto.
   // Esempio: { name: 'Lucia', phone: '+39 333 0000000' }
   contacts: [],

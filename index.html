@@ -33,7 +33,7 @@
       <a href="#chiesa" data-i18n="nav.church">Chiesa</a>
       <a href="#ricevimento" data-i18n="nav.reception">Ricevimento</a>
       <a href="#rsvp" data-i18n="nav.rsvp">RSVP</a>
-      <a href="#lista-nozze" data-gated="gift" hidden data-i18n="nav.gift">Lista nozze</a>
+      <a href="#lista-nozze" data-i18n="nav.gift">Regalo</a>
       <a href="#contatti" data-gated="contacts" hidden data-i18n="nav.contacts">Contatti</a>
       <a href="#foto" data-gated="gallery" hidden data-i18n="nav.gallery">Foto</a>
     </nav>
@@ -56,7 +56,7 @@
       <figure class="hero__figure">
         <img class="hero__photo" src="assets/hero.jpg" width="638" height="424"
              alt="Lucia e Luigi sdraiati su un telo, sorridenti" data-i18n-attr="alt:hero.photoAlt" fetchpriority="high">
-        <figcaption class="hero__names" aria-label="Luci e Gigi"><span aria-hidden="true">Luci &amp; Gigi</span></figcaption>
+        <figcaption class="hero__names" aria-label="Luci e Gigi"><span aria-hidden="true">Luci <span class="amp">&amp;</span> Gigi</span></figcaption>
       </figure>
 
       <p class="hero__place" data-i18n="hero.place">Chiesa di Santa Maria in Borgo - Nembro</p>
@@ -67,8 +67,6 @@
         <a class="btn btn--light" href="#rsvp" data-i18n="hero.rsvp">Conferma la tua presenza</a>
         <p class="hero__cal">
           <a href="#" id="ics-link" data-i18n="hero.calendar">Aggiungi al calendario</a>
-          <span aria-hidden="true">·</span>
-          <a href="#" id="gcal-link" target="_blank" rel="noopener" data-i18n="hero.googleCal">Google Calendar</a>
         </p>
       </div>
     </section>
@@ -116,9 +114,7 @@
           <p><a class="btn" id="church-maps" href="#" target="_blank" rel="noopener" data-i18n="maps.open">Apri in Maps</a></p>
         </div>
         <div class="place__map">
-          <iframe loading="lazy" referrerpolicy="no-referrer"
-            title="Mappa della chiesa di Nembro" data-i18n-attr="title:church.map"
-            src="https://www.openstreetmap.org/export/embed.html?bbox=9.7552%2C45.7409%2C9.7672%2C45.7489&amp;layer=mapnik&amp;marker=45.7449407%2C9.7612093"></iframe>
+          <img src="assets/chiesa.webp" width="474" height="407" loading="lazy" alt="La chiesa di Santa Maria Assunta in Borgo, Nembro" data-i18n-attr="alt:church.photo">
         </div>
       </div>
     </section>
@@ -139,9 +135,7 @@
           </p>
         </div>
         <div class="place__map">
-          <iframe loading="lazy" referrerpolicy="no-referrer"
-            title="Mappa del Castello di Monasterolo" data-i18n-attr="title:reception.map"
-            src="https://www.openstreetmap.org/export/embed.html?bbox=9.9124%2C45.7543%2C9.9244%2C45.7623&amp;layer=mapnik&amp;marker=45.7583456%2C9.9184287"></iframe>
+          <img src="assets/ricevimento.webp" width="1100" height="733" loading="lazy" alt="Il Castello di Monasterolo" data-i18n-attr="alt:reception.photo">
         </div>
       </div>
     </section>
@@ -155,11 +149,11 @@
       </div>
     </section>
 
-    <section class="section" id="lista-nozze" aria-labelledby="gift-t" hidden>
+    <section class="section" id="lista-nozze" aria-labelledby="gift-t">
       <div class="wrap wrap--narrow">
-        <h2 class="title" id="gift-t" data-i18n="gift.title">Lista nozze</h2>
+        <h2 class="title" id="gift-t" data-i18n="gift.title">Regalo di nozze</h2>
         <div class="rule" aria-hidden="true"></div>
-        <p class="lead" data-i18n="gift.text">Il regalo più bello è averti con noi. Se vuoi farci un pensiero, trovi qui i dati per un bonifico.</p>
+        <p class="lead" data-i18n="gift.text">Il regalo più bello è averti con noi.</p>
         <dl class="gift" id="gift-details"></dl>
         <p><button type="button" class="btn" id="gift-copy" data-i18n="gift.copy">Copia IBAN</button></p>
         <p class="gift__status" id="gift-status" role="status"></p>

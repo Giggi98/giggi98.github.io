@@ -229,7 +229,18 @@ a { color: inherit; }
   font-size: clamp(3.3rem, 15.5vw, 6rem);
   line-height: 1.15;
   white-space: nowrap;
-  text-shadow: var(--shadow-text);
+  text-shadow: .03em .06em .09em rgba(18, 48, 68, .5), 0 0 .5em rgba(18, 48, 68, .2);
+  transform: rotate(-3.5deg);
+  transform-origin: 0 100%;
+}
+/* la "&" è più piccola e dritta, come sul Save the Date */
+.hero__names .amp {
+  display: inline-block;
+  margin: 0 .12em;
+  font-family: var(--serif);
+  font-weight: 500;
+  font-size: .5em;
+  vertical-align: .15em;
 }
 @media (min-width: 40rem) {
   .hero__names { bottom: -4.2rem; }
@@ -404,12 +415,13 @@ a { color: inherit; }
 .place__meta { margin-top: 1.2rem; }
 .place__meta strong { font-weight: 500; }
 .place__buttons { display: flex; flex-wrap: wrap; gap: .75rem; justify-content: center; }
-.place__map iframe {
+.place__map img {
   display: block;
   width: 100%;
-  height: 20rem;
-  border: 1px solid rgba(30, 58, 76, .22);
+  height: auto;
   background: var(--tint);
+  border-radius: 3px;
+  box-shadow: 0 .5rem 1.4rem rgba(18, 48, 68, .18);
 }
 @media (min-width: 52rem) {
   .place { grid-template-columns: 1fr 1fr; gap: 3.5rem; }
@@ -419,7 +431,6 @@ a { color: inherit; }
   .place__text .rule { justify-content: flex-start; }
   .place__text .lead { margin-inline: 0; text-align: left; }
   .place__buttons { justify-content: flex-start; }
-  .place__map iframe { height: 26rem; }
 }
 
 /* ───── RSVP ───── */

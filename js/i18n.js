@@ -10,8 +10,8 @@ window.I18N = {
     'nav.day': 'Il giorno',
     'nav.church': 'Chiesa',
     'nav.reception': 'Ricevimento',
-    'nav.rsvp': 'Conferma',
-    'nav.gift': 'Lista nozze',
+    'nav.rsvp': 'RSVP',
+    'nav.gift': 'Regalo',
     'nav.contacts': 'Contatti',
     'nav.gallery': 'Foto',
 
@@ -21,7 +21,6 @@ window.I18N = {
     'hero.greeting': 'Ciao, {name}',
     'hero.rsvp': 'Conferma la tua presenza',
     'hero.calendar': 'Aggiungi al calendario',
-    'hero.googleCal': 'Google Calendar',
     'count.many': 'Mancano {n} giorni',
     'count.one': 'Manca un giorno',
     'count.today': 'Oggi è il grande giorno!',
@@ -42,7 +41,7 @@ window.I18N = {
     'church.text': 'Una chiesa del Quattrocento, completata nel 1456 e famosa per i suoi affreschi.',
     'church.address': 'Via Giuseppe Mazzini 51, 24027 Nembro (BG)',
     'church.when': 'Sabato 29 maggio 2027, ore 11:00',
-    'church.map': 'Mappa della chiesa di Nembro',
+    'church.photo': 'La chiesa di Santa Maria Assunta in Borgo, Nembro',
 
     'reception.title': 'Il ricevimento',
     'reception.lead': 'Festeggiamo al Castello di Monasterolo, sul Lago di Endine.',
@@ -51,7 +50,7 @@ window.I18N = {
     'reception.whenTime': 'Sabato 29 maggio 2027, ore {time}',
     'reception.whenSoon': 'Sabato 29 maggio 2027, orario in arrivo',
     'reception.route': 'Dalla chiesa sono circa 21,5 km, 30-35 minuti in auto attraverso la Val Cavallina.',
-    'reception.map': 'Mappa del Castello di Monasterolo',
+    'reception.photo': 'Il Castello di Monasterolo',
 
     'maps.open': 'Apri in Maps',
     'maps.route': 'Percorso dalla chiesa',
@@ -97,8 +96,8 @@ window.I18N = {
     'rsvp.changeLink': 'Modifica la risposta',
     'rsvp.closedNote': 'Le risposte sono chiuse. Se devi cambiare qualcosa, scrivici.',
 
-    'gift.title': 'Lista nozze',
-    'gift.text': 'Il regalo più bello è averti con noi. Se vuoi farci un pensiero, trovi qui i dati per un bonifico.',
+    'gift.title': 'Regalo di nozze',
+    'gift.text': 'Il regalo più bello è averti con noi. Se vorrai farci un pensiero, non abbiamo una lista nozze: ci renderà felici un piccolo contributo per iniziare insieme la nostra vita da sposi. Qui sotto trovi i dati per il bonifico. Grazie di cuore!',
     'gift.holder': 'Intestato a',
     'gift.iban': 'IBAN',
     'gift.reason': 'Causale',
@@ -134,7 +133,7 @@ window.I18N = {
     'nav.church': 'Church',
     'nav.reception': 'Reception',
     'nav.rsvp': 'RSVP',
-    'nav.gift': 'Gift list',
+    'nav.gift': 'Gift',
     'nav.contacts': 'Contacts',
     'nav.gallery': 'Photos',
 
@@ -144,7 +143,6 @@ window.I18N = {
     'hero.greeting': 'Hello, {name}',
     'hero.rsvp': 'Let us know if you’re coming',
     'hero.calendar': 'Add to calendar',
-    'hero.googleCal': 'Google Calendar',
     'count.many': '{n} days to go',
     'count.one': 'One day to go',
     'count.today': 'Today is the big day!',
@@ -165,7 +163,7 @@ window.I18N = {
     'church.text': 'A fifteenth-century church, completed in 1456 and famous for its frescoes.',
     'church.address': 'Via Giuseppe Mazzini 51, 24027 Nembro (BG), Italy',
     'church.when': 'Saturday, 29 May 2027, 11:00 am',
-    'church.map': 'Map of the church in Nembro',
+    'church.photo': 'The church of Santa Maria Assunta in Borgo, Nembro',
 
     'reception.title': 'The reception',
     'reception.lead': 'We celebrate at Castello di Monasterolo, on Lake Endine.',
@@ -174,7 +172,7 @@ window.I18N = {
     'reception.whenTime': 'Saturday, 29 May 2027, {time}',
     'reception.whenSoon': 'Saturday, 29 May 2027, time to be announced',
     'reception.route': 'From the church it is about 21.5 km, a 30-35 minute drive through the Val Cavallina.',
-    'reception.map': 'Map of Castello di Monasterolo',
+    'reception.photo': 'Castello di Monasterolo',
 
     'maps.open': 'Open in Maps',
     'maps.route': 'Route from the church',
@@ -220,8 +218,8 @@ window.I18N = {
     'rsvp.changeLink': 'Change answer',
     'rsvp.closedNote': 'Replies are closed. If you need to change something, get in touch.',
 
-    'gift.title': 'Gift list',
-    'gift.text': 'The best gift is having you with us. If you’d like to give us something, here are the details for a bank transfer.',
+    'gift.title': 'Wedding gift',
+    'gift.text': 'The best gift is having you with us. If you’d like to give us something, we don’t have a gift list: a small contribution will help us start our married life together. You’ll find the bank details below. Thank you from the bottom of our hearts!',
     'gift.holder': 'Account holder',
     'gift.iban': 'IBAN',
     'gift.reason': 'Reference',

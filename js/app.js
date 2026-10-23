@@ -195,12 +195,6 @@
     link.dataset.url = url;
     link.href = url;
     link.setAttribute('download', 'matrimonio-lucia-luigi.ics');
-
-    $('#gcal-link').href = 'https://calendar.google.com/calendar/render?action=TEMPLATE' +
-      '&text=' + encodeURIComponent(title) +
-      '&dates=' + start + '/' + end +
-      '&details=' + encodeURIComponent(desc) +
-      '&location=' + encodeURIComponent(loc);
   }
 
   /* ───── Invito personale e RSVP ───── */
@@ -218,7 +212,7 @@
       answeredAt: null,
       deadline: '2027-04-30',
       closed: false,
-      gift: { iban: 'IT00 X000 0000 0000 0000 0000 000', holder: 'Lucia e Luigi', reason: 'Regalo di nozze' }
+      gift: { iban: 'XXXXXXXXXXXXXXXXXXXXXXXXXXX', holder: 'Luigi Cagliani' }
     };
   }
 
@@ -307,7 +301,7 @@
     var views = { soon: viewSoon, entry: viewEntry, loading: viewLoading, invalid: viewInvalid,
                   error: viewError, form: viewForm, done: viewDone, closed: viewClosed };
     var focused = document.activeElement && root.contains(document.activeElement) ? document.activeElement.id : '';
-    if (!state.open && state.view !== 'soon' && state.view !== 'closed') {
+    if (!state.open && state.view !== 'closed') {
       root.className = 'rsvp-cta';
       root.replaceChildren(h('button', { type: 'button', class: 'btn btn--light', id: 'rsvp-open', onclick: function () {
         state.open = true;
@@ -501,16 +495,21 @@
       h('div', { class: 'msg', text: t('rsvp.closedNote') }));
   }
 
-  /* ───── Lista nozze (solo con invito valido) ───── */
+  /* ───── Regalo di nozze ───── */
 
   function groupIban(s) { return s.replace(/\s+/g, '').replace(/(.{4})/g, '$1 ').trim(); }
 
+  // Con un invito valido l'IBAN arriva dal foglio; altrimenti si usa quello in config.js.
+  function currentGift() {
+    var gift = (state.invite && state.invite.gift) || SITE.gift;
+    return gift && gift.iban ? gift : null;
+  }
+
   function renderGift() {
     var sec = $('#lista-nozze');
-    var gift = state.invite && state.invite.gift;
-    var visible = !!(gift && gift.iban);
+    var gift = currentGift();
+    var visible = !!gift;
     sec.hidden = !visible;
-    document.querySelectorAll('[data-gated="gift"]').forEach(function (a) { a.hidden = !visible; });
     if (!visible) return;
 
     var dl = $('#gift-details');
@@ -527,7 +526,8 @@
   function setupGiftCopy() {
     $('#gift-copy').addEventListener('click', function () {
       var status = $('#gift-status');
-      var iban = state.invite && state.invite.gift && state.invite.gift.iban.replace(/\s+/g, '');
+      var gift = currentGift();
+      var iban = gift && gift.iban.replace(/\s+/g, '');
       if (!iban) return;
       var done = function () { status.textContent = t('gift.copied'); };
       var fail = function () { status.textContent = t('gift.copyError'); };
