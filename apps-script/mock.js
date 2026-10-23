@@ -67,6 +67,10 @@ function makeEnv() {
     MailApp: { sendEmail: (to, subject, body) => mails.push({ to, subject, body }) },
     Utilities: {
       formatDate: (d, tz, fmt) => {
+        if (fmt === 'dd/MM/yyyy HH:mm') {
+          const p = Object.fromEntries(new Intl.DateTimeFormat('en-GB', { timeZone: tz, day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).formatToParts(d).map((x) => [x.type, x.value]));
+          return p.day + '/' + p.month + '/' + p.year + ' ' + p.hour + ':' + p.minute;
+        }
         assert.strictEqual(fmt, 'yyyy-MM-dd');
         return new Intl.DateTimeFormat('en-CA', { timeZone: tz }).format(d);
       }

@@ -99,7 +99,7 @@ function setup() {
   var summary = ss.getSheetByName(SHEET_SUMMARY) || ss.insertSheet(SHEET_SUMMARY);
   summary.clear();
   var G = SHEET_GUESTS + '!';
-  summary.getRange(1, 1, 8, 2).setFormulas([
+  summary.getRange(1, 1, 9, 2).setFormulas([
     ['Persone invitate', '=COUNTA(' + G + 'E2:E)'],
     ['Confermate', '=COUNTIF(' + G + 'G2:G,"Sì")'],
     ['Non vengono', '=COUNTIF(' + G + 'G2:G,"No")'],
@@ -107,9 +107,10 @@ function setup() {
     ['Menù bimbi (confermati)', '=COUNTIFS(' + G + 'F2:F,"Sì",' + G + 'G2:G,"Sì")'],
     ['Vegetariani (confermati)', '=COUNTIFS(' + G + 'G2:G,"Sì",' + G + 'H2:H,"Vegetariano")'],
     ['Vegani (confermati)', '=COUNTIFS(' + G + 'G2:G,"Sì",' + G + 'H2:H,"Vegano")'],
-    ['Con allergie o intolleranze', '=COUNTIFS(' + G + 'G2:G,"Sì",' + G + 'I2:I,"<>")']
+    ['Con allergie o intolleranze', '=COUNTIFS(' + G + 'G2:G,"Sì",' + G + 'I2:I,"<>")'],
+    ['Righe con nome doppio (controlla)', '=SUMPRODUCT((' + G + 'E2:E<>"")*(COUNTIF(' + G + 'E2:E,' + G + 'E2:E)>1))']
   ]);
-  summary.getRange(1, 1, 8, 1).setFontWeight('bold');
+  summary.getRange(1, 1, 9, 1).setFontWeight('bold');
   summary.setColumnWidth(1, 240);
 
   SpreadsheetApp.getUi().alert('Fogli pronti. Compila Config e Invitati, poi scegli "Genera codici e link" dal menu Matrimonio.');
@@ -178,7 +179,7 @@ function checkGuests() {
   var rows = readGuests(ss.getSheetByName(SHEET_GUESTS)).filter(function (r) {
     return clean(r.values[COL.NAME], 200) || clean(r.values[COL.INVITE], 200);
   });
-  var issues = findIssues(rows);
+  var issues = findIssues(rows, ss.getSpreadsheetTimeZone());
 
   var sheet = ss.getSheetByName(SHEET_CHECKS) || ss.insertSheet(SHEET_CHECKS);
   sheet.clear();
@@ -198,7 +199,7 @@ function checkGuests() {
   return issues;
 }
 
-function findIssues(rows) {
+function findIssues(rows, tz) {
   var issues = [];
   var byName = {}, byTokens = {}, byCode = {}, byInvite = {};
   var named = [];
@@ -227,9 +228,11 @@ function findIssues(rows) {
     var list = byName[key];
     if (list.length < 2) return;
     var same = list.every(function (r) { return String(r.values[COL.CODE]).toUpperCase() === String(list[0].values[COL.CODE]).toUpperCase(); });
+    var latest = latestAnswer(list);
     issues.push({
       type: same ? 'Nome ripetuto nello stesso invito' : 'Nome doppio (inviti diversi)',
-      detail: clean(list[0].values[COL.NAME], 200),
+      detail: clean(list[0].values[COL.NAME], 200) + ': ' + list.map(function (r) { return describeRow(r, tz); }).join(' | ')
+        + (latest && !same ? ' → probabile doppia risposta, la più recente è la riga ' + latest.row : ''),
       rows: list.map(function (r) { return r.row; })
     });
   });
@@ -280,6 +283,26 @@ function findIssues(rows) {
   });
 
   return issues;
+}
+
+// Riga con la risposta più recente (quella che l'invitato considera valida), se hanno una data.
+function latestAnswer(list) {
+  var best = null;
+  list.forEach(function (r) {
+    var d = r.values[COL.UPDATED];
+    if (!(d instanceof Date)) return;
+    if (!best || d.getTime() >= best.values[COL.UPDATED].getTime()) best = r;
+  });
+  return best;
+}
+
+function describeRow(r, tz) {
+  var d = r.values[COL.UPDATED];
+  var parts = ['invito "' + clean(r.values[COL.INVITE], 100) + '"'];
+  if (d instanceof Date) parts.push(Utilities.formatDate(d, tz, 'dd/MM/yyyy HH:mm'));
+  var resp = String(r.values[COL.RESP]).trim();
+  if (resp) parts.push(resp);
+  return 'riga ' + r.row + ' (' + parts.join(', ') + ')';
 }
 
 function normalizeName(name) {

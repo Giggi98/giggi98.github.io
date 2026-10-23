@@ -306,6 +306,9 @@ test('checkGuests: nomi doppi, ordine diverso, refusi, bambini soli, righe senza
   const sheet = env.sheets.Controlli.data;
   assert.strictEqual(sheet.length, issues.length + 1);
   assert.ok(sheet.some((r) => r[0] === 'Nome doppio (inviti diversi)' && /\d+, \d+/.test(r[2])));
+  const dup = sheet.find((r) => r[0] === 'Nome doppio (inviti diversi)');
+  assert.ok(/riga \d+ \(invito "Mario Bianchi", \d\d\/\d\d\/\d{4} \d\d:\d\d, Sì\)/.test(dup[1]), dup[1]);
+  assert.ok(dup[1].includes('la più recente è la riga'), dup[1]);
 });
 
 let failed = 0;

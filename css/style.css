@@ -497,9 +497,6 @@ a { color: inherit; }
 .check input { width: 1.3rem; height: 1.3rem; margin: 0; accent-color: var(--blanket); }
 .person__remove { margin: 1rem 0 0; }
 .hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
-.linkbox { margin-top: 1.4rem; padding-top: 1.2rem; border-top: 1px solid rgba(51, 92, 114, .22); }
-.linkbox p { margin: 0 0 .6rem; }
-.linkbox__url { font-family: var(--serif); font-weight: 500; overflow-wrap: anywhere; user-select: all; }
 .choice { display: flex; flex-wrap: wrap; gap: .7rem; }
 .choice label { position: relative; flex: 1 1 11rem; }
 .choice input {
@@ -562,12 +559,6 @@ a { color: inherit; }
 .sheet__foot { margin-top: 1.4rem; padding-top: 1.4rem; border-top: 1px solid rgba(51, 92, 114, .22); }
 .sheet__foot .btn { width: 100%; }
 @media (min-width: 40rem) { .sheet__foot .btn { width: auto; } }
-
-.codeform { display: grid; gap: .8rem; }
-@media (min-width: 40rem) {
-  .codeform { grid-template-columns: 1fr auto; align-items: end; }
-  .codeform .field__help { grid-column: 1 / -1; }
-}
 
 .msg {
   margin: 1rem 0 0;

@@ -8,7 +8,7 @@
   var state = {
     lang: 'it',
     code: '',
-    view: 'soon',       // soon | entry | loading | invalid | error | form | done | closed
+    view: 'soon',       // soon | loading | invalid | error | form | done | closed
     open: false,        // il modulo RSVP si apre col pulsante
     info: null,         // scadenza, chiusura e IBAN, letti dal foglio
     invite: null,       // risposta già salvata (da link, dal browser o appena inviata)
@@ -238,10 +238,6 @@
     };
   }
 
-  function inviteUrl(code) {
-    return window.location.origin + window.location.pathname + '?invito=' + code;
-  }
-
   function setUrlCode(code) {
     try {
       var url = new URL(window.location.href);
@@ -306,7 +302,7 @@
   function renderRsvp() {
     var root = $('#rsvp-root');
     renderIntro();
-    var views = { soon: viewSoon, entry: viewEntry, loading: viewLoading, invalid: viewInvalid,
+    var views = { soon: viewSoon, loading: viewLoading, invalid: viewInvalid,
                   error: viewError, form: viewForm, done: viewDone, closed: viewClosed };
     var focused = document.activeElement && root.contains(document.activeElement) ? document.activeElement.id : '';
     if (!state.open && state.view !== 'closed') {
@@ -336,32 +332,11 @@
     renderDynamic();
   }
 
-  function viewEntry() {
-    var input = h('input', { id: 'code-input', type: 'text', autocomplete: 'off', autocapitalize: 'characters',
-      spellcheck: 'false', maxlength: '20', 'aria-describedby': 'code-help' });
-    return h('div', null,
-      h('form', { class: 'codeform', onsubmit: function (e) {
-          e.preventDefault();
-          var code = input.value.replace(/\s+/g, '').toUpperCase();
-          if (!code) { input.focus(); return; }
-          setUrlCode(code);
-          loadInvite(code, false);
-        } },
-        h('div', { class: 'field' },
-          h('label', { for: 'code-input', text: t('rsvp.codeLabel') }),
-          input),
-        h('button', { type: 'submit', class: 'btn', text: t('rsvp.codeButton') }),
-        h('p', { class: 'field__help', id: 'code-help', text: t('rsvp.codeHelp') })),
-      h('p', { style: 'margin-top:1.2rem' },
-        h('button', { type: 'button', class: 'linkbtn', onclick: backToForm, text: t('rsvp.backToForm') })));
-  }
-
   function viewInvalid() {
     return h('div', null,
       h('div', { class: 'msg msg--error', role: 'alert', text: t('rsvp.invalid') }),
       h('p', { style: 'margin-top:1rem' },
-        h('button', { type: 'button', class: 'linkbtn', onclick: function () { state.view = 'entry'; renderRsvp(); }, text: t('rsvp.codeButton') })),
-      h('p', null, h('button', { type: 'button', class: 'linkbtn', onclick: backToForm, text: t('rsvp.backToForm') })));
+        h('button', { type: 'button', class: 'btn', onclick: backToForm, text: t('rsvp.backToForm') })));
   }
 
   function viewError() {
@@ -522,10 +497,7 @@
           oninput: function (e) { draft.message = e.target.value; } })),
       h('div', { class: 'sheet__foot' }, errorBox, button));
 
-    return h('div', null,
-      form,
-      answered ? null : h('p', { style: 'margin-top:1.2rem' },
-        h('button', { type: 'button', class: 'linkbtn', onclick: function () { state.view = 'entry'; renderRsvp(); }, text: t('rsvp.haveCode') })));
+    return form;
   }
 
   function summaryList(inv) {
@@ -542,21 +514,13 @@
   function viewDone() {
     var inv = state.invite;
     var anyYes = inv.people.some(function (p) { return p.attending === 'yes'; });
-    var url = inviteUrl(state.code);
-    var status = h('p', { class: 'field__help', role: 'status' });
     return h('div', null,
       h('div', { class: 'msg', id: 'rsvp-done', tabindex: '-1', role: 'status' },
         h('p', null, h('strong', { text: t('rsvp.saved') })),
         h('p', { text: t(anyYes ? 'rsvp.savedYes' : 'rsvp.savedNo') })),
       summaryList(inv),
-      h('div', { class: 'linkbox' },
-        h('p', { text: t('rsvp.keepLink') }),
-        h('p', { class: 'linkbox__url', text: url }),
-        h('button', { type: 'button', class: 'btn btn--ghost', text: t('rsvp.copyLink'), onclick: function () {
-          copyText(url, function () { status.textContent = t('rsvp.linkCopied'); }, function () { status.textContent = t('gift.copyError'); });
-        } }),
-        status),
-      h('p', { style: 'margin-top:1.2rem' },
+      h('p', { class: 'sheet__note', style: 'margin-top:1.2rem', text: t('rsvp.changeHint') }),
+      h('p', null,
         h('button', { type: 'button', class: 'linkbtn', onclick: function () { state.view = 'form'; renderRsvp(); }, text: t('rsvp.changeLink') })));
   }
 
