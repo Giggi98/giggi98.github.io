@@ -5,9 +5,8 @@ Contesto per Claude Code: stato del progetto e decisioni prese finora. Lingua di
 ## Stato attuale
 
 - Repo `Giggi98/giggi98.github.io`, GitHub Pages dal branch `main` (root), dominio `luciegigi.it` (file CNAME).
-- Il sito oggi è solo un `index.html` con "hello". Niente codice del sito ancora scritto.
 - Dominio registrato su register.it a settembre 2026 per un anno: scade intorno a settembre 2027 (copre il matrimonio; rinnovare se si vuole tenere il sito dopo).
-- **Siamo in fase di brainstorming/design** (skill `superpowers:brainstorming`, percorso architetturale): nessun codice finché la spec non è approvata. Prossimi passi elencati in fondo.
+- **Sito scritto il 2026-10-23** (non ancora pubblicato: nessun commit/push fatto, finché Luigi non lo chiede). L'utente ha scelto di saltare brainstorming e spec e di partire direttamente. Vedi "Com'è fatto il sito" in basso.
 
 ## Correzioni tecniche da fare (non ancora fatte)
 
@@ -40,9 +39,33 @@ Contesto per Claude Code: stato del progetto e decisioni prese finora. Lingua di
 - **Foto:** in una cartella Google Drive dell'utente (Drive non è sincronizzato sul PC: andranno scaricate come zip). Da ridimensionare/ottimizzare per il web prima di metterle nel sito.
 - **Assunzioni:** gli ospiti aprono il link da telefono via WhatsApp (mobile-first, anteprima link Open Graph curata); nessun costo oltre al dominio.
 
+## Com'è fatto il sito
+
+HTML/CSS/JS statico, nessuna build, nessuna dipendenza. File:
+
+- `index.html`: struttura e meta Open Graph (statici, bilingui) + `noindex`. Le sezioni "Lista nozze", "Contatti", "Foto" hanno `hidden` e il JS le mostra solo quando ci sono i dati.
+- `js/config.js`: **unico posto da toccare per i contenuti**: URL dell'Apps Script (`rsvpApi`), orario del ricevimento (`reception.time`), contatti, foto. Mai dati personali qui (repo pubblica).
+- `js/i18n.js`: tutti i testi IT/EN (`data-i18n` in HTML, `t()` in JS). L'orario "11:00" della cerimonia è nei testi `church.lead`, `church.when`, `ics.description` oltre che in `config.js`: se cambia, aggiornare anche quelli.
+- `js/app.js`: lingua, countdown, calendario (.ics all-day + link Google), link Maps, RSVP, lista nozze, galleria con lightbox.
+- `css/style.css`: stile. `fonts/` font self-hosted (Playball, Alegreya, Alegreya SC), nessuna chiamata a Google Fonts.
+- `assets/`: `hero.jpg` (ritagliata dal Save the Date, 638 px: **sostituire con l'originale** quando c'è), `og.jpg` (anteprima WhatsApp 1200x630, rigenerare se cambia la foto), `favicon.svg`.
+- `apps-script/`: `Code.gs` (backend RSVP, da incollare nel Google Sheet), `appsscript.json`, `README.md` (installazione passo-passo), `mock.js` + `test.js` (`node apps-script/test.js`, 11 test su un finto foglio).
+- `tools/optimize_photos.py`: ridimensiona le foto, toglie i metadati GPS, stampa il blocco `photos` per `config.js`.
+- `_config.yml`: esclude da Pages CLAUDE.md, README, apps-script, tools.
+
+**Stile (deciso il 2026-10-23, riprende il Save the Date):** cielo `#8cb9ce` (sfondo del Save the Date), inchiostro `#1e3a4c`, coperta `#335c72`, carta `#f6fafc`, pesca `#e0af9e` solo per dettagli. Nomi in Playball bianco con ombra sovrapposti alla foto come sulla card; doppio filetto sotto i titoli come sotto la data. L'apertura riproduce il Save the Date; il resto è sobrio su fondo chiaro.
+
+**Protocollo RSVP:** `GET <exec>?action=invite&code=XXXXXX` → `{ok, invite:{greeting, lang, people[{id,name,child,attending,diet,allergies}], message, answeredAt, deadline, closed, gift}}`; `POST <exec>` con body `text/plain` JSON `{action:'rsvp', code, message, people[{id,attending,diet,allergies}]}` → `{ok, answeredAt}` o `{ok:false, error: invalid_code|invalid_data|closed|busy}`. Il POST è `text/plain` apposta, per evitare il preflight CORS che Apps Script non gestisce.
+
+**Anteprima senza backend:** con `rsvpApi` vuoto, `?invito=DEMO` mostra un invito finto (non salva nulla). Senza API e senza DEMO la sezione RSVP dice "aprirà a breve". Quando si imposta `rsvpApi` il DEMO smette di funzionare da solo.
+
+**Collaudi fatti (2026-10-23):** `node apps-script/test.js` (11/11); browser headless Chrome contro `Code.gs` esposto da un server locale (invio, modifica, ricarica, cambio lingua con dati a metà, errore di rete, scadenza); screenshot mobile 390 px e desktop 1280 px. **Non verificato:** il comportamento reale di CORS/redirect di Apps Script (serve il deploy), le mappe OpenStreetMap incorporate (in headless non caricavano i tile), l'anteprima del link su WhatsApp (serve il sito pubblicato), VoiceOver/TalkBack.
+
 ## Domande aperte
 
-- **Stile grafico:** gli sposi non hanno ancora un'idea (nessuna partecipazione/palette). Hanno rifiutato il visual companion del brainstorming; preferiscono guardare template reali. Riferimenti già mandati:
+- **Per andare online:** (1) creare il Google Sheet e fare il deploy seguendo `apps-script/README.md`, incollare l'URL `/exec` in `js/config.js`; (2) fare una risposta di prova da telefono e controllare che arrivi nel foglio; (3) commit + push; (4) le due correzioni HTTPS/`www` qui sopra.
+- **Testi/dati mancanti:** orario del ricevimento, contatti da mostrare (la sezione compare da sola quando si riempie `contacts`), dress code (nessuna FAQ scritta perché non lo sappiamo), parcheggio alla chiesa, FAQ sui bambini, scadenza RSVP definitiva (oggi `2027-04-30` nel foglio `Config`), foto per la galleria, foto originale ad alta risoluzione per l'apertura, testo definitivo della lista nozze (oggi generico: "Il regalo più bello è averti con noi…").
+- **Stile grafico (storico, ora superato):** gli sposi non avevano un'idea. Hanno rifiutato il visual companion del brainstorming; preferivano guardare template reali. Riferimenti mandati:
   - Editoriale minimal: https://ceremony.framer.website/ , https://darling.framer.website/ (i domini `framer.website` sono bloccati dalla rete di casa: aprire da telefono)
   - Botanico/paesaggio: Zola Galata, Eastwick, Camden (`https://www.zola.com/wedding-planning/website/design/<nome>`)
   - Classico elegante: Zola Abbey, Verona (`.../design/abbey`, `.../design/verona-black`)
@@ -50,13 +73,12 @@ Contesto per Claude Code: stato del progetto e decisioni prese finora. Lingua di
   - Solo funzionamento RSVP a codice: https://wedding.rampatra.com (codice 271117)
 - Orari di cerimonia e ricevimento; testi (FAQ, dress code); contatti da mostrare; IBAN e intestatario (andranno nel foglio, non qui).
 
-## Prossimi passi (brainstorming)
+## Prossimi passi
 
-1. Ricevere le preferenze di stile dagli sposi.
-2. Proporre 2-3 approcci tecnici con raccomandazione (idea attuale: HTML/CSS/JS statico senza build, testi IT/EN in un file di traduzioni, script Python locale per ottimizzare le foto, Apps Script per RSVP).
-3. Presentare il design a sezioni e farlo approvare.
-4. Scrivere la spec (attenzione: tutto ciò che è nella repo è pubblico e servito da Pages; valutare `_config.yml` con `exclude`).
-5. Piano di implementazione (skill `writing-plans`), poi codice.
+1. Guardare il sito con Luigi (`python -m http.server` nella cartella, poi `http://localhost:8000/?invito=DEMO`) e raccogliere le correzioni.
+2. Deploy del backend (vedi "Domande aperte"), prova reale, poi pubblicare.
+3. Riempire i dati mancanti in `js/config.js` e `js/i18n.js`; aggiungere le foto con `tools/optimize_photos.py`.
+4. Prima di mandare i link: generare i codici nel foglio, provare almeno un link su iPhone e uno su Android aperti da WhatsApp.
 
 ## Ricerca utile
 

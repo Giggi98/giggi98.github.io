@@ -1,1 +1,219 @@
-hello
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Luci &amp; Gigi · 29.05.2027</title>
+  <meta name="description" content="Il matrimonio di Lucia e Luigi: 29 maggio 2027, Nembro e Monasterolo del Castello.">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#8cb9ce">
+
+  <!-- Anteprima del link (WhatsApp, iMessage, Telegram): letta senza JavaScript, quindi testi fissi e bilingui -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Luci &amp; Gigi">
+  <meta property="og:title" content="Luci &amp; Gigi · 29.05.2027">
+  <meta property="og:description" content="Ci sposiamo! · We’re getting married! Nembro, 29 maggio 2027.">
+  <meta property="og:url" content="https://luciegigi.it/">
+  <meta property="og:image" content="https://luciegigi.it/assets/og.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="fonts/Playball.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <a class="skip" href="#main" data-i18n="a11y.skip">Vai ai contenuti</a>
+
+  <header class="bar" id="bar">
+    <a class="bar__logo" href="#top" aria-label="Luci &amp; Gigi">L&amp;G</a>
+    <nav class="bar__nav" aria-label="Sezioni del sito" data-i18n-attr="aria-label:a11y.menu">
+      <a href="#giorno" data-i18n="nav.day">Il giorno</a>
+      <a href="#chiesa" data-i18n="nav.church">Chiesa</a>
+      <a href="#ricevimento" data-i18n="nav.reception">Ricevimento</a>
+      <a href="#rsvp" data-i18n="nav.rsvp">RSVP</a>
+      <a href="#lista-nozze" data-gated="gift" hidden data-i18n="nav.gift">Lista nozze</a>
+      <a href="#faq" data-i18n="nav.faq">Domande</a>
+      <a href="#contatti" data-gated="contacts" hidden data-i18n="nav.contacts">Contatti</a>
+      <a href="#foto" data-gated="gallery" hidden data-i18n="nav.gallery">Foto</a>
+    </nav>
+    <div class="bar__end">
+      <a class="bar__rsvp" href="#rsvp" data-i18n="nav.rsvp">RSVP</a>
+      <div class="lang" role="group" aria-label="Lingua" data-i18n-attr="aria-label:a11y.lang">
+        <button type="button" data-lang="it" aria-pressed="true">IT</button>
+        <button type="button" data-lang="en" aria-pressed="false">EN</button>
+      </div>
+    </div>
+  </header>
+
+  <main id="main">
+    <!-- Apertura: riprende il Save the Date -->
+    <section class="hero" id="top">
+      <p class="hero__date">29.05.2027</p>
+      <div class="rule rule--light" aria-hidden="true"></div>
+      <h1 class="hero__tagline" data-i18n="hero.tagline">Ci sposiamo!</h1>
+
+      <figure class="hero__figure">
+        <img class="hero__photo" src="assets/hero.jpg" width="638" height="424"
+             alt="Lucia e Luigi sdraiati su un telo, sorridenti" data-i18n-attr="alt:hero.photoAlt" fetchpriority="high">
+        <figcaption class="hero__names" aria-label="Luci e Gigi"><span aria-hidden="true">Luci &amp; Gigi</span></figcaption>
+      </figure>
+
+      <p class="hero__place" data-i18n="hero.place">Chiesa di Santa Maria in Borgo - Nembro</p>
+      <p class="hero__greeting" id="greeting" hidden></p>
+      <p class="hero__count" id="countdown" aria-live="polite"></p>
+
+      <div class="hero__actions">
+        <a class="btn btn--light" href="#rsvp" data-i18n="hero.rsvp">Conferma la tua presenza</a>
+        <p class="hero__cal">
+          <a href="#" id="ics-link" data-i18n="hero.calendar">Aggiungi al calendario</a>
+          <span aria-hidden="true">·</span>
+          <a href="#" id="gcal-link" target="_blank" rel="noopener" data-i18n="hero.googleCal">Google Calendar</a>
+        </p>
+      </div>
+    </section>
+
+    <section class="section" id="giorno" aria-labelledby="giorno-t">
+      <div class="wrap">
+        <h2 class="title" id="giorno-t" data-i18n="day.title">Il giorno</h2>
+        <div class="rule" aria-hidden="true"></div>
+        <p class="lead" data-i18n="day.lead">Sabato 29 maggio 2027</p>
+
+        <ol class="timeline">
+          <li class="timeline__item">
+            <p class="timeline__when" id="tl-ceremony-time">11:00</p>
+            <div>
+              <h3 class="timeline__title" data-i18n="day.ceremony">Cerimonia</h3>
+              <p><a class="textlink" href="#chiesa" data-i18n="day.ceremonyText">Chiesa di Santa Maria Assunta in Borgo, Nembro</a></p>
+            </div>
+          </li>
+          <li class="timeline__item timeline__item--travel">
+            <p class="timeline__when" data-i18n="day.then">Poi</p>
+            <div>
+              <p data-i18n="day.travel">Ci spostiamo al Castello di Monasterolo: circa 21,5 km, 30-35 minuti in auto.</p>
+            </div>
+          </li>
+          <li class="timeline__item">
+            <p class="timeline__when" id="tl-reception-time" data-i18n="day.timeSoon">Orario in arrivo</p>
+            <div>
+              <h3 class="timeline__title" data-i18n="day.reception">Ricevimento</h3>
+              <p><a class="textlink" href="#ricevimento" data-i18n="day.receptionText">Castello di Monasterolo, Monasterolo del Castello</a></p>
+            </div>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="section section--tint" id="chiesa" aria-labelledby="chiesa-t">
+      <div class="wrap place">
+        <div class="place__text">
+          <h2 class="title" id="chiesa-t" data-i18n="church.title">La chiesa</h2>
+          <div class="rule" aria-hidden="true"></div>
+          <p class="lead" data-i18n="church.lead">La cerimonia comincia alle 11:00 a Nembro, nella chiesa di Santa Maria Assunta in Borgo.</p>
+          <p data-i18n="church.text">Una chiesa del Quattrocento, completata nel 1456 e famosa per i suoi affreschi.</p>
+          <p class="place__meta"><strong data-i18n="church.when">Sabato 29 maggio 2027, ore 11:00</strong><br>
+            <span data-i18n="church.address">Via Giuseppe Mazzini 51, 24027 Nembro (BG)</span></p>
+          <p><a class="btn" id="church-maps" href="#" target="_blank" rel="noopener" data-i18n="maps.open">Apri in Maps</a></p>
+        </div>
+        <div class="place__map">
+          <iframe loading="lazy" referrerpolicy="no-referrer"
+            title="Mappa della chiesa di Nembro" data-i18n-attr="title:church.map"
+            src="https://www.openstreetmap.org/export/embed.html?bbox=9.7552%2C45.7409%2C9.7672%2C45.7489&amp;layer=mapnik&amp;marker=45.7449407%2C9.7612093"></iframe>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="ricevimento" aria-labelledby="ricevimento-t">
+      <div class="wrap place place--flip">
+        <div class="place__text">
+          <h2 class="title" id="ricevimento-t" data-i18n="reception.title">Il ricevimento</h2>
+          <div class="rule" aria-hidden="true"></div>
+          <p class="lead" data-i18n="reception.lead">Festeggiamo al Castello di Monasterolo, sul Lago di Endine.</p>
+          <p data-i18n="reception.text">Il castello è circondato da un parco botanico con più di 700 specie, siepi scolpite e una piscina in marmo.</p>
+          <p class="place__meta"><strong id="reception-when" data-i18n="reception.whenSoon">Sabato 29 maggio 2027, orario in arrivo</strong><br>
+            <span data-i18n="reception.address">Piazzetta Contessa V. Terni de Gregori 1, 24060 Monasterolo del Castello (BG)</span></p>
+          <p data-i18n="reception.route">Dalla chiesa sono circa 21,5 km, 30-35 minuti in auto attraverso la Val Cavallina.</p>
+          <p class="place__buttons">
+            <a class="btn" id="reception-maps" href="#" target="_blank" rel="noopener" data-i18n="maps.open">Apri in Maps</a>
+            <a class="btn btn--ghost" id="route-maps" href="#" target="_blank" rel="noopener" data-i18n="maps.route">Percorso dalla chiesa</a>
+          </p>
+        </div>
+        <div class="place__map">
+          <iframe loading="lazy" referrerpolicy="no-referrer"
+            title="Mappa del Castello di Monasterolo" data-i18n-attr="title:reception.map"
+            src="https://www.openstreetmap.org/export/embed.html?bbox=9.9124%2C45.7543%2C9.9244%2C45.7623&amp;layer=mapnik&amp;marker=45.7583456%2C9.9184287"></iframe>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section--sky" id="rsvp" aria-labelledby="rsvp-t">
+      <div class="wrap wrap--narrow">
+        <h2 class="title title--light" id="rsvp-t" data-i18n="rsvp.title">Conferma la tua presenza</h2>
+        <div class="rule rule--light" aria-hidden="true"></div>
+        <p class="lead lead--light" id="rsvp-intro"></p>
+        <div class="sheet" id="rsvp-root" aria-live="polite"></div>
+      </div>
+    </section>
+
+    <section class="section" id="lista-nozze" aria-labelledby="gift-t" hidden>
+      <div class="wrap wrap--narrow">
+        <h2 class="title" id="gift-t" data-i18n="gift.title">Lista nozze</h2>
+        <div class="rule" aria-hidden="true"></div>
+        <p class="lead" data-i18n="gift.text">Il regalo più bello è averti con noi. Se vuoi farci un pensiero, trovi qui i dati per un bonifico.</p>
+        <dl class="gift" id="gift-details"></dl>
+        <p><button type="button" class="btn" id="gift-copy" data-i18n="gift.copy">Copia IBAN</button></p>
+        <p class="gift__status" id="gift-status" role="status"></p>
+      </div>
+    </section>
+
+    <section class="section section--tint" id="faq" aria-labelledby="faq-t">
+      <div class="wrap wrap--narrow">
+        <h2 class="title" id="faq-t" data-i18n="faq.title">Domande frequenti</h2>
+        <div class="rule" aria-hidden="true"></div>
+        <div class="faq">
+          <details><summary data-i18n="faq.q1">Posso cambiare la risposta dopo averla inviata?</summary><p data-i18n="faq.a1"></p></details>
+          <details><summary data-i18n="faq.q2">Chi è invitato?</summary><p data-i18n="faq.a2"></p></details>
+          <details><summary data-i18n="faq.q3">Come comunico allergie e intolleranze?</summary><p data-i18n="faq.a3"></p></details>
+          <details><summary data-i18n="faq.q4">Quanto distano la chiesa e il ricevimento?</summary><p data-i18n="faq.a4"></p></details>
+          <details><summary data-i18n="faq.q5">Arrivo in aereo: qual è l’aeroporto più vicino?</summary><p data-i18n="faq.a5"></p></details>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="contatti" aria-labelledby="contatti-t" hidden>
+      <div class="wrap wrap--narrow">
+        <h2 class="title" id="contatti-t" data-i18n="contacts.title">Contatti</h2>
+        <div class="rule" aria-hidden="true"></div>
+        <p class="lead" data-i18n="contacts.text">Per qualsiasi dubbio scrivici o chiamaci.</p>
+        <ul class="contacts" id="contacts-list"></ul>
+      </div>
+    </section>
+
+    <section class="section section--tint" id="foto" aria-labelledby="foto-t" hidden>
+      <div class="wrap">
+        <h2 class="title" id="foto-t" data-i18n="gallery.title">Foto</h2>
+        <div class="rule" aria-hidden="true"></div>
+        <ul class="gallery" id="gallery-list"></ul>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p class="footer__names" aria-hidden="true">Luci &amp; Gigi</p>
+    <p data-i18n="footer.text">Lucia e Luigi · 29 maggio 2027</p>
+    <p><a href="#top" data-i18n="footer.top">Torna su</a></p>
+  </footer>
+
+  <dialog class="lightbox" id="lightbox" aria-label="Foto">
+    <button type="button" class="lightbox__close" id="lb-close" data-i18n-attr="aria-label:gallery.close" aria-label="Chiudi">×</button>
+    <button type="button" class="lightbox__nav lightbox__nav--prev" id="lb-prev" data-i18n-attr="aria-label:gallery.prev" aria-label="Foto precedente">‹</button>
+    <div class="lightbox__stage" id="lb-stage"></div>
+    <button type="button" class="lightbox__nav lightbox__nav--next" id="lb-next" data-i18n-attr="aria-label:gallery.next" aria-label="Foto successiva">›</button>
+  </dialog>
+
+  <script src="js/config.js"></script>
+  <script src="js/i18n.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

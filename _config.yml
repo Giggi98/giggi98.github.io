@@ -1,0 +1,7 @@
+# GitHub Pages pubblica tutto ciò che è nella repo: qui escludiamo ciò che non serve agli invitati.
+exclude:
+  - CLAUDE.md
+  - README.md
+  - apps-script
+  - tools
+  - docs
