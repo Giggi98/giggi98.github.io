@@ -214,12 +214,24 @@ a { color: inherit; }
   max-width: 36rem;
   margin: 2rem auto 4.2rem;
 }
-.hero__photo {
-  display: block;
-  width: 100%;
-  height: auto;
+.hero__frame {
+  position: relative;
+  aspect-ratio: 3 / 2;
+  background: var(--blanket);
   box-shadow: 0 .6rem 1.6rem rgba(18, 48, 68, .22);
 }
+/* Le foto sono sovrapposte: scorrono con una dissolvenza (vedi setupHeroSlides in app.js). */
+.hero__photo {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 40%;
+  transition: opacity 1.2s ease-in-out;
+}
+.hero__photo.is-off { opacity: 0; }
 .hero__names {
   position: absolute;
   left: 15%;
@@ -273,7 +285,7 @@ a { color: inherit; }
 
 /* Entrata dell'apertura: l'unico movimento della pagina che non risponde a un gesto */
 @media (prefers-reduced-motion: no-preference) {
-  .hero__photo { animation: photo-in .9s ease-out both; }
+  .hero__frame { animation: photo-in .9s ease-out both; }
   .hero__names { animation: names-write 1.5s cubic-bezier(.5, .1, .3, 1) .55s both; }
 }
 @keyframes photo-in { from { opacity: 0; } to { opacity: 1; } }

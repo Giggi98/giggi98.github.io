@@ -30,6 +30,27 @@ window.SITE = {
   // solo gli invitati con il link personale, lascia qui il segnaposto e mettilo nel foglio Google (foglio Config).
   gift: { holder: 'Luigi Cagliani', iban: 'XXXXXXXXXXXXXXXXXXXXXXXXXXX' },
 
+  // Foto che scorrono nell'apertura (da `python tools/optimize_photos.py CARTELLA --hero`).
+  // Se sono meno di due resta ferma la prima (o quella già nell'HTML).
+  // Esempio: { src: 'assets/hero/01.jpg' }
+  heroPhotos: [
+    { src: 'assets/hero/01.jpg' },
+    { src: 'assets/hero/02.jpg' },
+    { src: 'assets/hero/03.jpg' },
+    { src: 'assets/hero/04.jpg' },
+    { src: 'assets/hero/05.jpg' },
+    { src: 'assets/hero/06.jpg' },
+    { src: 'assets/hero/07.jpg' },
+    { src: 'assets/hero/08.jpg' },
+    { src: 'assets/hero/09.jpg' },
+    { src: 'assets/hero/10.jpg' },
+    { src: 'assets/hero/11.jpg' },
+    { src: 'assets/hero/12.jpg' },
+    { src: 'assets/hero/13.jpg' },
+    { src: 'assets/hero/14.jpg' },
+    { src: 'assets/hero/15.jpg' }
+  ],
+
   // Contatti: la sezione compare solo se c'è almeno un contatto.
   // Esempio: { name: 'Lucia', phone: '+39 333 0000000' }
   contacts: [],

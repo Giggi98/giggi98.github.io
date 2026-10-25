@@ -512,16 +512,10 @@
   }
 
   function viewDone() {
-    var inv = state.invite;
-    var anyYes = inv.people.some(function (p) { return p.attending === 'yes'; });
-    return h('div', null,
-      h('div', { class: 'msg', id: 'rsvp-done', tabindex: '-1', role: 'status' },
-        h('p', null, h('strong', { text: t('rsvp.saved') })),
-        h('p', { text: t(anyYes ? 'rsvp.savedYes' : 'rsvp.savedNo') })),
-      summaryList(inv),
-      h('p', { class: 'sheet__note', style: 'margin-top:1.2rem', text: t('rsvp.changeHint') }),
-      h('p', null,
-        h('button', { type: 'button', class: 'linkbtn', onclick: function () { state.view = 'form'; renderRsvp(); }, text: t('rsvp.changeLink') })));
+    var anyYes = state.invite.people.some(function (p) { return p.attending === 'yes'; });
+    return h('div', { class: 'msg', id: 'rsvp-done', tabindex: '-1', role: 'status' },
+      h('p', null, h('strong', { text: t('rsvp.saved') })),
+      h('p', { text: t(anyYes ? 'rsvp.savedYes' : 'rsvp.savedNo') }));
   }
 
   function viewClosed() {
@@ -641,6 +635,48 @@
     });
   }
 
+  /* ───── Foto d'apertura a scorrimento ───── */
+
+  var SLIDE_MS = 6000;   // tempo tra una foto e l'altra (la dissolvenza dura 1,2 s, vedi CSS)
+
+  function setupHeroSlides() {
+    var photos = SITE.heroPhotos || [];
+    var frame = $('.hero__frame');
+    var first = $('.hero__photo');
+    if (photos.length < 2 || !frame || !first) return;
+    // Chi ha chiesto meno movimento vede la prima foto ferma.
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    if (first.getAttribute('src') !== photos[0].src) first.setAttribute('src', photos[0].src);
+    var slides = [first].concat(photos.slice(1).map(function (p) {
+      var img = h('img', { class: 'hero__photo is-off', alt: '', width: first.getAttribute('width'),
+        height: first.getAttribute('height'), decoding: 'async', 'data-src': p.src });
+      frame.append(img);
+      return img;
+    }));
+    var current = 0;
+    var timer = null;
+
+    // Una foto alla volta: la successiva si scarica solo quando quella corrente è già in mostra.
+    function load(i) {
+      if (!slides[i].getAttribute('src')) slides[i].setAttribute('src', slides[i].getAttribute('data-src'));
+    }
+    function next() {
+      var i = (current + 1) % slides.length;
+      var img = slides[i];
+      if (!img.complete || !img.naturalWidth) { load(i); return; }   // non è ancora arrivata: si riprova al giro dopo
+      slides.forEach(function (s, k) { s.classList.toggle('is-off', k !== i); });
+      current = i;
+      load((i + 1) % slides.length);
+    }
+    function start() { if (!timer) timer = setInterval(next, SLIDE_MS); }
+    function stop() { clearInterval(timer); timer = null; }
+
+    load(1);
+    start();
+    document.addEventListener('visibilitychange', function () { if (document.hidden) stop(); else start(); });
+  }
+
   /* ───── Avvio ───── */
 
   function init() {
@@ -652,6 +688,7 @@
     setupGiftCopy();
     setupContacts();
     setupGallery();
+    setupHeroSlides();
 
     state.lang = pickInitialLang();
     applyI18n();

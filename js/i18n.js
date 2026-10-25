@@ -16,7 +16,7 @@ window.I18N = {
     'nav.gallery': 'Foto',
 
     'hero.tagline': 'Ci sposiamo!',
-    'hero.photoAlt': 'Lucia e Luigi sdraiati su un telo, sorridenti',
+    'hero.photoAlt': 'Lucia e Luigi insieme, sorridenti',
     'hero.place': 'Chiesa di Santa Maria in Borgo - Nembro',
     'hero.greeting': 'Ciao, {name}',
     'hero.rsvp': 'Conferma la tua presenza',
@@ -98,8 +98,6 @@ window.I18N = {
     'rsvp.remove': 'Togli questa persona',
     'rsvp.backToForm': 'Torna al modulo',
     'rsvp.fullError': 'Non riusciamo a ricevere altre risposte da qui. Scrivici.',
-    'rsvp.changeHint': 'Per cambiare la risposta più avanti, riapri il sito dallo stesso telefono e premi RSVP: la ritrovi già compilata.',
-    'rsvp.changeLink': 'Modifica la risposta',
     'rsvp.closedNote': 'Le risposte sono chiuse. Se devi cambiare qualcosa, scrivici.',
 
     'gift.title': 'Regalo di nozze',
@@ -144,7 +142,7 @@ window.I18N = {
     'nav.gallery': 'Photos',
 
     'hero.tagline': 'We’re getting married!',
-    'hero.photoAlt': 'Lucia and Luigi lying on a blanket, smiling',
+    'hero.photoAlt': 'Lucia and Luigi together, smiling',
     'hero.place': 'Chiesa di Santa Maria in Borgo - Nembro',
     'hero.greeting': 'Hello, {name}',
     'hero.rsvp': 'Let us know if you’re coming',
@@ -226,8 +224,6 @@ window.I18N = {
     'rsvp.remove': 'Remove this person',
     'rsvp.backToForm': 'Back to the form',
     'rsvp.fullError': 'We can’t take more answers here. Please get in touch.',
-    'rsvp.changeHint': 'To change your answer later, open the site again on the same phone and press RSVP: you’ll find it already filled in.',
-    'rsvp.changeLink': 'Change answer',
     'rsvp.closedNote': 'Replies are closed. If you need to change something, get in touch.',
 
     'gift.title': 'Wedding gift',
