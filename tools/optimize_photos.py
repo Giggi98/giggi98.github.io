@@ -9,7 +9,7 @@ Per ogni foto crea in photos/ una versione grande (lato lungo max 1600 px) e in 
 Le foto vengono ruotate secondo l'orientamento e ripulite da tutti i metadati (posizione GPS compresa):
 il sito è pubblico, quindi non deve uscire nulla che non si veda nell'immagine.
 
-Con --hero le foto vengono ritagliate in 3:2 (il formato della cornice), larghe 1200 px, e salvate in assets/hero/;
+Con --hero le foto vengono ritagliate in 4:3 (il formato della cornice), larghe 1200 px, e salvate in assets/hero/;
 il ritaglio tiene il punto di fuoco un po' sopra il centro (--focus 0.4) così i visi restano dentro. Con --sheet FILE.jpg
 crea anche un foglio di anteprima con tutte le foto, per controllare i ritagli.
 
@@ -31,7 +31,7 @@ except ImportError:  # senza il plugin le foto HEIC vengono saltate con un messa
 ROOT = Path(__file__).resolve().parent.parent
 EXTENSIONS = {'.jpg', '.jpeg', '.png', '.webp', '.heic', '.heif'}
 HERO_WIDTH = 1200
-HERO_RATIO = 3 / 2
+HERO_RATIO = 4 / 3
 FULL_SIZE = 1600
 THUMB_SIZE = 480
 
@@ -71,7 +71,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument('source', type=Path, help='cartella con le foto originali (anche sottocartelle)')
     parser.add_argument('--out', type=Path, help='cartella di destinazione (default: photos/, con --hero assets/hero/)')
-    parser.add_argument('--hero', action='store_true', help="foto per l'apertura: ritagliate 3:2, in assets/hero/")
+    parser.add_argument('--hero', action='store_true', help="foto per l'apertura: ritagliate 4:3, in assets/hero/")
     parser.add_argument('--focus', type=float, default=0.4, help='con --hero: dove tenere il ritaglio nelle foto alte (0 alto, 1 basso)')
     parser.add_argument('--sheet', type=Path, help='con --hero: salva qui un foglio di anteprima dei ritagli')
     args = parser.parse_args()

@@ -626,10 +626,13 @@
   function setupTripMap() {
     var data = window.TRIP_MAP;
     var box = $('#trip-map');
-    if (!data || !box) return;
+    var wrap = $('.trip');
+    if (!data || !box || !wrap) return;
     var NS = 'http://www.w3.org/2000/svg';
     var W = data.width, H = data.height;
     var photosOf = function (id) { return (SITE.tripPhotos && SITE.tripPhotos[id]) || []; };
+    // Dove sta il nome rispetto al segnaposto, scelto per non finire sopra i tragitti.
+    var LABEL_SIDE = { tokyo: 'below', kyoto: 'above', osaka: 'left', samui: 'right' };
 
     function svgEl(name, attrs) {
       var el = document.createElementNS(NS, name);
@@ -669,8 +672,10 @@
       if (!c) return;
       order.push(id);
       stops[id] = btn;
-      pins[id] = h('button', { type: 'button', class: 'trip__pin', 'data-city': id, text: String(order.length),
-        style: 'left:' + (c.x / W) * 100 + '%;top:' + (c.y / H) * 100 + '%' });
+      pins[id] = h('button', { type: 'button', class: 'trip__pin', 'data-city': id,
+        style: 'left:' + (c.x / W) * 100 + '%;top:' + (c.y / H) * 100 + '%' },
+        h('span', { class: 'trip__pin-num', text: String(order.length) }),
+        h('span', { class: 'trip__pin-name trip__pin-name--' + (LABEL_SIDE[id] || 'right'), text: textOf(btn, '.trip__city') }));
       box.append(pins[id]);
       var open = function (e) { e.stopPropagation(); select(id); };
       pins[id].addEventListener('click', open);
@@ -685,6 +690,7 @@
 
     function select(id) {
       current = id;
+      wrap.classList.remove('is-new');
       Object.keys(pins).forEach(function (k) {
         pins[k].classList.toggle('is-active', k === id);
         stops[k].classList.toggle('is-active', k === id);
@@ -737,12 +743,22 @@
       Object.keys(pins).forEach(function (k) { pins[k].classList.remove('is-active'); stops[k].classList.remove('is-active'); });
     }
 
+    // Etichette per chi usa lo screen reader: nome e date, nella lingua corrente.
+    function refreshLabels() {
+      order.forEach(function (id) {
+        pins[id].setAttribute('aria-label', textOf(stops[id], '.trip__city') + ', ' + textOf(stops[id], '.timeline__when'));
+      });
+    }
+    refreshLabels();
+    wrap.classList.add('has-map', 'is-new');
+    $('#trip-hint').hidden = false;
+
     document.addEventListener('click', function (e) { if (current && !pop.contains(e.target)) close(); });
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && current) close(); });
     window.addEventListener('resize', place);
     // Cambio lingua: il fumetto aperto si riscrive nella nuova lingua.
     document.querySelectorAll('.lang button').forEach(function (b) {
-      b.addEventListener('click', function () { if (current) select(current); });
+      b.addEventListener('click', function () { refreshLabels(); if (current) select(current); });
     });
     applyI18n();
   }
