@@ -688,15 +688,17 @@ a { color: inherit; }
 .trip__pop-meta { margin: .15rem 0 0; font-size: 1rem; color: var(--muted); }
 .trip__pop-close {
   position: absolute;
-  top: .25rem;
-  right: .35rem;
-  width: 2rem;
-  height: 2rem;
+  top: .65rem;
+  right: .65rem;
+  z-index: 1;
+  width: 1.9rem;
+  height: 1.9rem;
   padding: 0;
-  background: none;
+  background: rgba(246, 250, 252, .9);
   border: 0;
-  color: var(--muted);
-  font-size: 1.5rem;
+  border-radius: 50%;
+  color: var(--ink);
+  font-size: 1.4rem;
   line-height: 1;
   cursor: pointer;
 }

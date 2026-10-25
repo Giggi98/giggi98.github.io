@@ -54,7 +54,12 @@ window.SITE = {
 
   // Foto delle tappe del viaggio di nozze, mostrate quando si tocca una città sulla mappa (da una a quattro per città).
   // Esempio: { tokyo: ['assets/trip/tokyo-1.jpg', 'assets/trip/tokyo-2.jpg'], kyoto: [...], osaka: [...], samui: [...] }
-  tripPhotos: {},
+  tripPhotos: {
+    tokyo: ['assets/trip/tokyo-1.jpg'],
+    kyoto: ['assets/trip/kyoto-1.jpg'],
+    osaka: ['assets/trip/osaka-1.jpg'],
+    samui: ['assets/trip/samui-1.jpg']
+  },
 
   // Contatti: la sezione compare solo se c'è almeno un contatto.
   // Esempio: { name: 'Lucia', phone: '+39 333 0000000' }
@@ -107,19 +112,6 @@ window.SITE = {
     { src: 'photos/42.jpg', thumb: 'photos/thumbs/42.jpg' },
     { src: 'photos/43.jpg', thumb: 'photos/thumbs/43.jpg' },
     { src: 'photos/44.jpg', thumb: 'photos/thumbs/44.jpg' },
-    { src: 'photos/45.jpg', thumb: 'photos/thumbs/45.jpg' },
-    { src: 'photos/46.jpg', thumb: 'photos/thumbs/46.jpg' },
-    { src: 'photos/47.jpg', thumb: 'photos/thumbs/47.jpg' },
-    { src: 'photos/48.jpg', thumb: 'photos/thumbs/48.jpg' },
-    { src: 'photos/49.jpg', thumb: 'photos/thumbs/49.jpg' },
-    { src: 'photos/50.jpg', thumb: 'photos/thumbs/50.jpg' },
-    { src: 'photos/51.jpg', thumb: 'photos/thumbs/51.jpg' },
-    { src: 'photos/52.jpg', thumb: 'photos/thumbs/52.jpg' },
-    { src: 'photos/53.jpg', thumb: 'photos/thumbs/53.jpg' },
-    { src: 'photos/54.jpg', thumb: 'photos/thumbs/54.jpg' },
-    { src: 'photos/55.jpg', thumb: 'photos/thumbs/55.jpg' },
-    { src: 'photos/56.jpg', thumb: 'photos/thumbs/56.jpg' },
-    { src: 'photos/57.jpg', thumb: 'photos/thumbs/57.jpg' },
-    { src: 'photos/58.jpg', thumb: 'photos/thumbs/58.jpg' }
+    { src: 'photos/45.jpg', thumb: 'photos/thumbs/45.jpg' }
   ]
 };
