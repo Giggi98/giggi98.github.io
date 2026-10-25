@@ -9,9 +9,8 @@ Per ogni foto crea in photos/ una versione grande (lato lungo max 1600 px) e in 
 Le foto vengono ruotate secondo l'orientamento e ripulite da tutti i metadati (posizione GPS compresa):
 il sito è pubblico, quindi non deve uscire nulla che non si veda nell'immagine.
 
-Con --hero le foto vengono ritagliate in 4:3 (il formato della cornice), larghe 1200 px, e salvate in assets/hero/;
-il ritaglio tiene il punto di fuoco un po' sopra il centro (--focus 0.4) così i visi restano dentro. Con --sheet FILE.jpg
-crea anche un foglio di anteprima con tutte le foto, per controllare i ritagli.
+Con --hero le foto restano intere (lato lungo 1400 px) e vengono salvate in assets/hero/: il sito le mostra dentro una cornice 4:3,
+con uno sfondo sfocato ai lati delle foto in piedi. Con --sheet FILE.jpg crea anche un foglio di anteprima con tutte le foto.
 
 Richiede Pillow (pip install pillow). Per le foto HEIC dell'iPhone serve anche: pip install pillow-heif
 """
@@ -30,7 +29,7 @@ except ImportError:  # senza il plugin le foto HEIC vengono saltate con un messa
 
 ROOT = Path(__file__).resolve().parent.parent
 EXTENSIONS = {'.jpg', '.jpeg', '.png', '.webp', '.heic', '.heif'}
-HERO_WIDTH = 1200
+HERO_LONG = 1400
 HERO_RATIO = 4 / 3
 FULL_SIZE = 1600
 THUMB_SIZE = 480
@@ -42,28 +41,22 @@ def save(img, path, size, quality):
     copy.save(path, 'JPEG', quality=quality, optimize=True, progressive=True)  # niente exif: non lo passiamo
 
 
-def crop_hero(img, focus):
-    """Ritaglia a 3:2 tenendo il punto di fuoco (0 = in alto, 1 = in basso) per le foto più alte del formato."""
-    w, h = img.size
-    if w / h > HERO_RATIO:                      # più larga: si tagliano i lati, al centro
-        new_w = round(h * HERO_RATIO)
-        left = (w - new_w) // 2
-        box = (left, 0, left + new_w, h)
-    else:                                       # più alta: si taglia sopra e sotto
-        new_h = round(w / HERO_RATIO)
-        top = round((h - new_h) * focus)
-        box = (0, top, w, top + new_h)
-    out = img.crop(box)
-    return out.resize((HERO_WIDTH, round(HERO_WIDTH / HERO_RATIO)), Image.LANCZOS)
+def fit_hero(img):
+    """Foto intera (niente ritaglio), lato lungo HERO_LONG px: il sito la mostra dentro la cornice, con uno sfondo sfocato ai lati."""
+    out = img.copy()
+    out.thumbnail((HERO_LONG, HERO_LONG), Image.LANCZOS)
+    return out
 
 
 def contact_sheet(paths, target, cols=4, cell=300):
+    h = round(cell * 3 / 4)
     rows = (len(paths) + cols - 1) // cols
-    sheet = Image.new('RGB', (cols * cell, rows * round(cell / HERO_RATIO)), 'white')
+    sheet = Image.new('RGB', (cols * cell, rows * h), 'white')
     for i, p in enumerate(paths):
         with Image.open(p) as im:
-            im = im.convert('RGB').resize((cell, round(cell / HERO_RATIO)), Image.LANCZOS)
-        sheet.paste(im, ((i % cols) * cell, (i // cols) * round(cell / HERO_RATIO)))
+            im = im.convert('RGB')
+            im.thumbnail((cell - 4, h - 4), Image.LANCZOS)
+        sheet.paste(im, ((i % cols) * cell + 2, (i // cols) * h + 2))
     sheet.save(target, 'JPEG', quality=80)
 
 
@@ -71,8 +64,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument('source', type=Path, help='cartella con le foto originali (anche sottocartelle)')
     parser.add_argument('--out', type=Path, help='cartella di destinazione (default: photos/, con --hero assets/hero/)')
-    parser.add_argument('--hero', action='store_true', help="foto per l'apertura: ritagliate 4:3, in assets/hero/")
-    parser.add_argument('--focus', type=float, default=0.4, help='con --hero: dove tenere il ritaglio nelle foto alte (0 alto, 1 basso)')
+    parser.add_argument('--hero', action='store_true', help="foto per l'apertura: intere, lato lungo 1400 px, in assets/hero/")
     parser.add_argument('--sheet', type=Path, help='con --hero: salva qui un foglio di anteprima dei ritagli')
     args = parser.parse_args()
     if args.out is None:
@@ -95,7 +87,7 @@ def main():
             continue
         name = f'{len(entries) + 1:02d}.jpg'
         if args.hero:
-            crop_hero(img, args.focus).save(args.out / name, 'JPEG', quality=80, optimize=True, progressive=True)
+            fit_hero(img).save(args.out / name, 'JPEG', quality=80, optimize=True, progressive=True)
             entries.append({'src': f'assets/hero/{name}'})
             print(f'{path.name} -> {name}', file=sys.stderr)
             continue

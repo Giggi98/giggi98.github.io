@@ -775,28 +775,38 @@
       var tmp = photos[k]; photos[k] = photos[j]; photos[j] = tmp;
     }
     var frame = $('.hero__frame');
+    var firstSlide = $('.hero__slide');
     var first = $('.hero__photo');
-    if (photos.length < 2 || !frame || !first) return;
+    if (photos.length < 2 || !frame || !firstSlide || !first) return;
     // Chi ha chiesto meno movimento vede la prima foto ferma.
     if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
-    if (first.getAttribute('src') !== photos[0].src) first.setAttribute('src', photos[0].src);
-    var slides = [first].concat(photos.slice(1).map(function (p) {
-      var img = h('img', { class: 'hero__photo is-off', alt: '', width: first.getAttribute('width'),
-        height: first.getAttribute('height'), decoding: 'async', 'data-src': p.src });
-      frame.append(img);
-      return img;
+    if (first.getAttribute('src') !== photos[0].src) {
+      first.setAttribute('src', photos[0].src);
+      $('.hero__bg').setAttribute('src', photos[0].src);
+    }
+    // Ogni diapositiva ha la foto e la sua copia sfocata (stesso file: il browser lo scarica una volta sola).
+    var slides = [firstSlide].concat(photos.slice(1).map(function (p) {
+      var slide = h('div', { class: 'hero__slide is-off', 'data-src': p.src },
+        h('img', { class: 'hero__bg', alt: '', 'aria-hidden': 'true', decoding: 'async' }),
+        h('img', { class: 'hero__photo', alt: '', decoding: 'async' }));
+      frame.append(slide);
+      return slide;
     }));
     var current = 0;
     var timer = null;
 
     // Una foto alla volta: la successiva si scarica solo quando quella corrente è già in mostra.
     function load(i) {
-      if (!slides[i].getAttribute('src')) slides[i].setAttribute('src', slides[i].getAttribute('data-src'));
+      var imgs = slides[i].querySelectorAll('img');
+      if (!imgs[0].getAttribute('src')) {
+        imgs[0].setAttribute('src', slides[i].getAttribute('data-src'));
+        imgs[1].setAttribute('src', slides[i].getAttribute('data-src'));
+      }
     }
     function next() {
       var i = (current + 1) % slides.length;
-      var img = slides[i];
+      var img = slides[i].querySelector('.hero__photo');
       if (!img.complete || !img.naturalWidth) { load(i); return; }   // non è ancora arrivata: si riprova al giro dopo
       slides.forEach(function (s, k) { s.classList.toggle('is-off', k !== i); });
       current = i;
