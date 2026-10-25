@@ -34,6 +34,7 @@
       <a href="#ricevimento" data-i18n="nav.reception">Ricevimento</a>
       <a href="#rsvp" data-i18n="nav.rsvp">RSVP</a>
       <a href="#lista-nozze" data-i18n="nav.gift">Regalo</a>
+      <a href="#viaggio" data-i18n="nav.trip">Viaggio</a>
       <a href="#contatti" data-gated="contacts" hidden data-i18n="nav.contacts">Contatti</a>
       <a href="#foto" data-gated="gallery" hidden data-i18n="nav.gallery">Foto</a>
     </nav>
@@ -66,7 +67,10 @@
       <p class="hero__count" id="countdown" aria-live="polite"></p>
 
       <div class="hero__actions">
-        <a class="btn btn--light" href="#rsvp" data-i18n="hero.rsvp">Conferma la tua presenza</a>
+        <div class="hero__buttons">
+          <a class="btn btn--light" href="#rsvp" data-i18n="hero.rsvp">Conferma la tua presenza</a>
+          <a class="btn btn--outline-light" id="photos-link" href="#foto" hidden data-i18n="hero.photos">Guarda le foto</a>
+        </div>
         <p class="hero__cal">
           <a href="#" id="ics-link" data-i18n="hero.calendar">Aggiungi al calendario</a>
         </p>
@@ -162,6 +166,45 @@
       </div>
     </section>
 
+    <section class="section section--tint" id="viaggio" aria-labelledby="viaggio-t">
+      <div class="wrap">
+        <h2 class="title" id="viaggio-t" data-i18n="trip.title">Viaggio di nozze</h2>
+        <div class="rule" aria-hidden="true"></div>
+        <p class="lead" data-i18n="trip.lead">Dopo il matrimonio partiamo per il Giappone e la Thailandia.</p>
+        <ol class="timeline">
+          <li class="timeline__item">
+            <p class="timeline__when" data-i18n="trip.d1">2–8 giugno</p>
+            <div>
+              <h3 class="timeline__title">Tokyo</h3>
+              <p data-i18n="trip.jp">Giappone</p>
+            </div>
+          </li>
+          <li class="timeline__item">
+            <p class="timeline__when" data-i18n="trip.d2">8–11 giugno</p>
+            <div>
+              <h3 class="timeline__title">Kyoto</h3>
+              <p data-i18n="trip.jp">Giappone</p>
+            </div>
+          </li>
+          <li class="timeline__item">
+            <p class="timeline__when" data-i18n="trip.d3">11–13 giugno</p>
+            <div>
+              <h3 class="timeline__title">Osaka</h3>
+              <p data-i18n="trip.jp">Giappone</p>
+            </div>
+          </li>
+          <li class="timeline__item">
+            <p class="timeline__when" data-i18n="trip.d4">13–18 giugno</p>
+            <div>
+              <h3 class="timeline__title">Koh Samui</h3>
+              <p data-i18n="trip.th">Thailandia</p>
+            </div>
+          </li>
+        </ol>
+        <p class="trip__note" data-i18n="trip.note">Itinerario di massima: potrebbe cambiare.</p>
+      </div>
+    </section>
+
     <section class="section" id="contatti" aria-labelledby="contatti-t" hidden>
       <div class="wrap wrap--narrow">
         <h2 class="title" id="contatti-t" data-i18n="contacts.title">Contatti</h2>
@@ -171,7 +214,7 @@
       </div>
     </section>
 
-    <section class="section section--tint" id="foto" aria-labelledby="foto-t" hidden>
+    <section class="section" id="foto" aria-labelledby="foto-t" hidden>
       <div class="wrap">
         <h2 class="title" id="foto-t" data-i18n="gallery.title">Foto</h2>
         <div class="rule" aria-hidden="true"></div>

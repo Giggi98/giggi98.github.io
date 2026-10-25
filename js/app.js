@@ -290,16 +290,21 @@
 
   function deadlineSource() { return state.invite || state.info; }
 
+  // Testo con la data di scadenza in grassetto: si spezza il testo dove cade {deadline} e la si mette in un <strong>.
+  function withDeadline(key, vars) {
+    var marker = '\u0001';
+    var parts = t(key, Object.assign({}, vars, { deadline: marker })).split(marker);
+    var out = [parts[0]];
+    if (parts.length > 1) out.push(h('strong', { text: fmtDeadline() }), parts[1]);
+    return out;
+  }
+
   function renderIntro() {
     var intro = $('#rsvp-intro');
     var src = deadlineSource();
     var key = src && src.closed ? 'rsvp.introClosed' : (src && src.deadline ? 'rsvp.intro' : 'rsvp.introNoDate');
     if (state.view === 'soon') { intro.textContent = ''; return; }
-    // La data di scadenza va in grassetto: si spezza il testo dove cade e la si mette in un <strong>.
-    var marker = '\u0001';
-    var parts = t(key, { deadline: marker }).split(marker);
-    intro.replaceChildren(parts[0]);
-    if (parts.length > 1) intro.append(h('strong', { text: fmtDeadline() }), parts[1]);
+    intro.replaceChildren.apply(intro, withDeadline(key, {}));
   }
 
   function renderRsvp() {
@@ -489,7 +494,7 @@
       }
     } },
       answered ? h('p', { class: 'sheet__hello', text: t('rsvp.hello', { name: inv.greeting }) }) : null,
-      answered ? h('p', { class: 'sheet__note', text: t('rsvp.answeredOn', { date: fmtLong(new Date(inv.answeredAt)), deadline: fmtDeadline() }) }) : null,
+      answered ? h('p', { class: 'sheet__note' }, withDeadline('rsvp.answeredOn', { date: fmtLong(new Date(inv.answeredAt)) })) : null,
       h('p', { class: 'sheet__note', text: t('rsvp.formHelp') }),
       h('div', { class: 'hp', 'aria-hidden': 'true' }, trap),
       people,
@@ -604,6 +609,7 @@
     var photos = SITE.photos || [];
     if (!photos.length) return;
     $('#foto').hidden = false;
+    $('#photos-link').hidden = false;
     document.querySelectorAll('[data-gated="gallery"]').forEach(function (a) { a.hidden = false; });
 
     var ul = $('#gallery-list');
