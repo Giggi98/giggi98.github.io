@@ -22,8 +22,8 @@ var SHEET_CONFIG = 'Config';
 var SHEET_SUMMARY = 'Riepilogo';
 var SHEET_CHECKS = 'Controlli';
 
-var GUEST_HEADERS = ['ID', 'Codice', 'Invito', 'Lingua', 'Nome', 'Bambino', 'Risposta', 'Dieta', 'Allergie', 'Aggiornato', 'Link'];
-var COL = { ID: 0, CODE: 1, INVITE: 2, LANG: 3, NAME: 4, CHILD: 5, RESP: 6, DIET: 7, ALLERGY: 8, UPDATED: 9, LINK: 10 };
+var GUEST_HEADERS = ['ID', 'Codice', 'Invito', 'Lingua', 'Nome', 'Bambino', 'Risposta', 'Dieta', 'Allergie', 'Aggiornato', 'Link', 'Seggiolone'];
+var COL = { ID: 0, CODE: 1, INVITE: 2, LANG: 3, NAME: 4, CHILD: 5, RESP: 6, DIET: 7, ALLERGY: 8, UPDATED: 9, LINK: 10, HIGHCHAIR: 11 };
 
 var CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // niente I, O, 0, 1: si confondono
 var CODE_LENGTH = 6;
@@ -66,6 +66,10 @@ function setup() {
     guests.getRange(3, 1, 1, 6).setValues([['', '', 'Famiglia Esempio', 'it', 'Giulia Esempio', '']]);
     guests.getRange(4, 1, 1, 6).setValues([['', '', 'Famiglia Esempio', 'it', 'Luca Esempio', 'Sì']]);
   }
+  // Fogli creati prima della colonna "Seggiolone": aggiunge l'intestazione.
+  if (!guests.getRange(1, COL.HIGHCHAIR + 1).getValue()) {
+    guests.getRange(1, COL.HIGHCHAIR + 1).setValue('Seggiolone').setFontWeight('bold').setBackground('#d9e8f0');
+  }
   // Allergie e messaggi sono testo libero: formato "testo" così nessun valore viene letto come formula.
   guests.getRange(2, COL.ALLERGY + 1, 1000, 1).setNumberFormat('@');
   guests.getRange(2, COL.LANG + 1, 1000, 1).setDataValidation(
@@ -99,7 +103,7 @@ function setup() {
   var summary = ss.getSheetByName(SHEET_SUMMARY) || ss.insertSheet(SHEET_SUMMARY);
   summary.clear();
   var G = SHEET_GUESTS + '!';
-  summary.getRange(1, 1, 9, 2).setFormulas([
+  summary.getRange(1, 1, 11, 2).setFormulas([
     ['Persone invitate', '=COUNTA(' + G + 'E2:E)'],
     ['Confermate', '=COUNTIF(' + G + 'G2:G,"Sì")'],
     ['Non vengono', '=COUNTIF(' + G + 'G2:G,"No")'],
@@ -108,9 +112,11 @@ function setup() {
     ['Vegetariani (confermati)', '=COUNTIFS(' + G + 'G2:G,"Sì",' + G + 'H2:H,"Vegetariano")'],
     ['Vegani (confermati)', '=COUNTIFS(' + G + 'G2:G,"Sì",' + G + 'H2:H,"Vegano")'],
     ['Con allergie o intolleranze', '=COUNTIFS(' + G + 'G2:G,"Sì",' + G + 'I2:I,"<>")'],
+    ['Bimbi con seggiolone proprio', '=COUNTIFS(' + G + 'F2:F,"Sì",' + G + 'G2:G,"Sì",' + G + 'L2:L,"Sì")'],
+    ['Bimbi senza seggiolone (da fornire)', '=COUNTIFS(' + G + 'F2:F,"Sì",' + G + 'G2:G,"Sì",' + G + 'L2:L,"No")'],
     ['Righe con nome doppio (controlla)', '=SUMPRODUCT((' + G + 'E2:E<>"")*(COUNTIF(' + G + 'E2:E,' + G + 'E2:E)>1))']
   ]);
-  summary.getRange(1, 1, 9, 1).setFontWeight('bold');
+  summary.getRange(1, 1, 11, 1).setFontWeight('bold');
   summary.setColumnWidth(1, 240);
 
   SpreadsheetApp.getUi().alert('Fogli pronti. Compila Config e Invitati, poi scegli "Genera codici e link" dal menu Matrimonio.');
@@ -376,6 +382,7 @@ function getInvite(rawCode) {
       id: String(v[COL.ID]),
       name: clean(v[COL.NAME], 200),
       child: isYes(v[COL.CHILD]),
+      highchair: highchairOf(v[COL.HIGHCHAIR]),
       attending: resp === 'sì' || resp === 'si' ? 'yes' : (resp === 'no' ? 'no' : null),
       diet: LABEL_TO_DIET[String(v[COL.DIET]).trim().toLowerCase()] || 'none',
       allergies: clean(v[COL.ALLERGY], 300)
@@ -462,11 +469,17 @@ function saveRsvp(body) {
         row: known ? known.row : 0,
         name: name,
         child: typeof a.child === 'boolean' ? a.child : (known ? isYes(known.values[COL.CHILD]) : false),
+        highchair: null,
         attending: attending,
         diet: attending === 'yes' ? diet : 'none',
         allergies: attending === 'yes' ? clean(a.allergies, 300) : ''
       });
     }
+    // Il seggiolone si chiede solo per i bambini che vengono: "yes" = lo portano, "no" = serve quello del locale.
+    entries.forEach(function (e, n) {
+      var h = list[n] && list[n].highchair;
+      e.highchair = e.child && e.attending === 'yes' && (h === 'yes' || h === 'no') ? h : null;
+    });
     if (Object.keys(byId).some(function (knownId) { return !seen[knownId]; })) return { ok: false, error: 'invalid_data' };
     if (!code && sheet.getLastRow() >= MAX_ROWS) return { ok: false, error: 'full' };
 
@@ -505,6 +518,7 @@ function saveRsvp(body) {
         var stamp = sheet.getRange(e.row, COL.UPDATED + 1);
         stamp.setNumberFormat('dd/MM/yyyy HH:mm');
         stamp.setValue(now);
+        writeHighchair(sheet, e);
         return;
       }
       // Persona nuova: una riga in fondo. Tutto come testo (nessun valore letto come formula o come numero).
@@ -516,6 +530,7 @@ function saveRsvp(body) {
       created.setNumberFormat('dd/MM/yyyy HH:mm');
       created.setValue(now);
       if (link) sheet.getRange(e.row, COL.LINK + 1).setValue(link);
+      writeHighchair(sheet, e);
     });
 
     var message = cleanMultiline(body.message, 1000);
@@ -537,6 +552,8 @@ function notify(cfg, invite, entries, message, isUpdate) {
       if (e.attending === 'yes') yes++; else no++;
       var extra = [];
       if (e.child) extra.push('bambino');
+      if (e.highchair === 'yes') extra.push('porta il seggiolone');
+      if (e.highchair === 'no') extra.push('serve un seggiolone');
       if (e.diet !== 'none') extra.push(DIET_TO_LABEL[e.diet]);
       if (e.allergies) extra.push('allergie: ' + e.allergies);
       return '- ' + e.name + ': ' + (e.attending === 'yes' ? 'ci sarà' : 'non ci sarà') + (extra.length ? ' (' + extra.join(', ') + ')' : '');
@@ -550,6 +567,17 @@ function notify(cfg, invite, entries, message, isUpdate) {
 }
 
 /* ───────────── Helper ───────────── */
+
+function highchairOf(v) {
+  var s = String(v).trim().toLowerCase();
+  return s === 'sì' || s === 'si' ? 'yes' : (s === 'no' ? 'no' : null);
+}
+
+function writeHighchair(sheet, e) {
+  var cell = sheet.getRange(e.row, COL.HIGHCHAIR + 1);
+  cell.setNumberFormat('@');
+  cell.setValue(e.highchair === 'yes' ? 'Sì' : (e.highchair === 'no' ? 'No' : ''));
+}
 
 function readGuests(sheet) {
   var last = sheet.getLastRow();

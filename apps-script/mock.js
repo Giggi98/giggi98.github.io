@@ -18,6 +18,7 @@ class Range {
     }
     return out;
   }
+  getValue() { return this.getValues()[0][0]; }
   setValues(vals) {
     vals.forEach((row, i) => row.forEach((v, j) => this.sheet.put(this.r + i, this.c + j, v)));
     return this;

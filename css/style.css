@@ -281,7 +281,6 @@ a { color: inherit; }
 }
 .hero__actions { display: grid; justify-items: center; gap: 1rem; }
 .hero__buttons { display: flex; flex-wrap: wrap; justify-content: center; gap: .75rem; }
-.trip__note { margin: 1.4rem 0 0; text-align: center; font-style: italic; color: var(--muted); }
 .hero__cal { margin: 0; font-size: 1.05rem; }
 .hero__cal a { text-underline-offset: .25em; }
 
@@ -440,6 +439,9 @@ a { color: inherit; }
   background: var(--tint);
   border-radius: 3px;
   box-shadow: 0 .5rem 1.4rem rgba(18, 48, 68, .18);
+  max-height: 34rem;
+  object-fit: cover;
+  object-position: 50% 40%;
 }
 @media (min-width: 52rem) {
   .place { grid-template-columns: 1fr 1fr; gap: 3.5rem; }
@@ -619,6 +621,114 @@ a { color: inherit; }
 }
 #lista-nozze p { text-align: center; }
 .gift__status { min-height: 1.6em; font-size: 1.05rem; color: var(--muted); }
+
+/* ───── Viaggio di nozze ───── */
+.trip { max-width: 40rem; margin: 2rem auto 0; }
+.trip__map { position: relative; border-radius: 14px; box-shadow: 0 .5rem 1.4rem rgba(18, 48, 68, .18); }
+.trip__map svg { display: block; width: 100%; height: auto; border-radius: 14px; }
+.trip__sea { fill: #cfe3ee; }
+.trip__land { fill: var(--paper); stroke: var(--line); stroke-width: 1.4; stroke-linejoin: round; }
+.trip__frame { fill: none; stroke: var(--blanket); stroke-width: 1.5; }
+.trip__route { fill: none; stroke: var(--blanket); stroke-width: 3.5; stroke-linecap: round; stroke-dasharray: 11 10; }
+.trip__route--flight { stroke-dasharray: 3 13; }
+.trip__label {
+  position: absolute;
+  margin: 0;
+  font-family: var(--caps);
+  font-weight: 500;
+  font-size: .95rem;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  pointer-events: none;
+}
+.trip__pin {
+  position: absolute;
+  width: 1.9rem;
+  height: 1.9rem;
+  padding: 0;
+  transform: translate(-50%, -50%);
+  background: var(--blanket);
+  color: #fff;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  box-shadow: 0 .15rem .5rem rgba(18, 48, 68, .35);
+  font: 500 1rem/1 var(--serif);
+  cursor: pointer;
+  transition: transform .15s, background-color .15s;
+}
+.trip__pin:hover, .trip__pin.is-active { background: var(--ink); transform: translate(-50%, -50%) scale(1.15); }
+.trip__pin:focus-visible, .trip__stop:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
+.trip__pop {
+  position: absolute;
+  z-index: 3;
+  width: min(15rem, calc(100% - 1rem));
+  padding: .7rem .8rem .8rem;
+  background: var(--paper);
+  color: var(--ink);
+  border-radius: 8px;
+  box-shadow: 0 .6rem 1.6rem rgba(18, 48, 68, .3);
+  text-align: left;
+}
+.trip__pop::after {
+  content: '';
+  position: absolute;
+  left: var(--tail, 50%);
+  width: .9rem;
+  height: .9rem;
+  margin-left: -.45rem;
+  background: var(--paper);
+  transform: rotate(45deg);
+}
+.trip__pop--above::after { bottom: -.45rem; }
+.trip__pop--below::after { top: -.45rem; }
+.trip__pop-photo { display: block; width: 100%; aspect-ratio: 3 / 2; object-fit: cover; border-radius: 4px; margin-bottom: .6rem; background: var(--tint); }
+.trip__pop-title { margin: 0; font-family: var(--caps); font-weight: 500; font-size: 1.3rem; line-height: 1.2; }
+.trip__pop-meta { margin: .15rem 0 0; font-size: 1rem; color: var(--muted); }
+.trip__pop-close {
+  position: absolute;
+  top: .25rem;
+  right: .35rem;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  background: none;
+  border: 0;
+  color: var(--muted);
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+}
+.trip__legend { list-style: none; margin: 1.2rem 0 0; padding: 0; display: grid; gap: .5rem; }
+@media (min-width: 40rem) { .trip__legend { grid-template-columns: 1fr 1fr; } }
+.trip__stop {
+  display: flex;
+  align-items: center;
+  gap: .7rem;
+  width: 100%;
+  padding: .55rem .8rem;
+  background: var(--paper);
+  color: var(--ink);
+  border: 1px solid rgba(51, 92, 114, .25);
+  border-radius: 6px;
+  font: 400 1.1rem/1.2 var(--serif);
+  text-align: left;
+  cursor: pointer;
+}
+.trip__stop.is-active { border-color: var(--blanket); background: #fff; }
+.trip__num {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 1.7rem;
+  height: 1.7rem;
+  background: var(--blanket);
+  color: #fff;
+  border-radius: 50%;
+  font-size: .95rem;
+}
+.trip__city { font-family: var(--caps); font-weight: 500; font-size: 1.2rem; }
+.trip__dates { margin-left: auto; color: var(--muted); font-size: 1rem; }
 
 /* ───── Contatti e galleria ───── */
 .contacts { list-style: none; margin: 1.6rem 0 0; padding: 0; display: grid; gap: .8rem; text-align: center; }

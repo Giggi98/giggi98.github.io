@@ -1,0 +1,18 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//luciegigi.it//Matrimonio//IT
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+BEGIN:VEVENT
+UID:matrimonio-20270529@luciegigi.it
+DTSTAMP:20261025T143423Z
+DTSTART;VALUE=DATE:20270529
+DTEND;VALUE=DATE:20270530
+SUMMARY:Matrimonio di Lucia e Luigi
+LOCATION:Chiesa di Santa Maria Assunta in Borgo\, Via Giuseppe Mazzini 51\,
+  24027 Nembro BG
+DESCRIPTION:Cerimonia alle 11:00 nella chiesa di Santa Maria Assunta in Bor
+ go\, Nembro. Ricevimento al Castello di Monasterolo. Tutte le informazioni
+ : https://luciegigi.it
+END:VEVENT
+END:VCALENDAR

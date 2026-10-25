@@ -20,7 +20,7 @@ aggiunge le righe al foglio `Invitati`. Chi vuole cambiare la risposta riapre il
    - `email_notifica`: la mail che riceve un avviso a ogni risposta (lasciala vuota per non riceverne). `notifica_attiva`: `SI` o `NO`.
    - `intestatario`, `iban`, `causale`: per il regalo di nozze. Compaiono nella sezione "Regalo di nozze" del sito, visibili a chi lo apre.
 7. **`Invitati` si riempie da solo.** Ogni risposta aggiunge una riga per persona: `Invito` è il nome di chi ha risposto, `Lingua` quella
-   del sito al momento dell'invio, `Bambino` è `Sì` se l'invitato ha spuntato la casella. `ID`, `Codice` e `Link` li scrive lo script (il link non viene mostrato agli invitati: serve solo a voi).
+   del sito al momento dell'invio, `Bambino` è `Sì` se l'invitato ha spuntato la casella, e `Seggiolone` dice se porta il proprio (`Sì`) o ne serve uno (`No`). `ID`, `Codice` e `Link` li scrive lo script (il link non viene mostrato agli invitati: serve solo a voi).
    Cancella le tre righe "Famiglia Esempio" create da "Prepara i fogli". Se vuoi puoi anche scrivere tu degli invitati e dare loro un link
    personale con il menu Matrimonio > "2. Genera codici e link" (opzionale: non serve per il link unico).
 8. **Pubblica lo script come web app.** Nell'editor: Distribuisci > Nuova distribuzione > ingranaggio > App web.

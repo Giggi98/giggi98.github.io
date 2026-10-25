@@ -155,47 +155,9 @@
 
   /* ───── Calendario ───── */
 
-  function icsEscape(s) {
-    return String(s).replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r?\n/g, '\\n');
-  }
-  function icsFold(line) {
-    var out = [], enc = new TextEncoder(), cur = '', size = 0;
-    Array.from(line).forEach(function (ch) {
-      var n = enc.encode(ch).length;
-      if (size + n > 74) { out.push(cur); cur = ' '; size = 1; }
-      cur += ch; size += n;
-    });
-    out.push(cur);
-    return out.join('\r\n');
-  }
-
+  // I file .ics sono in assets/ (li crea `node tools/make_ics.js`): un indirizzo vero si apre anche su iPhone e nei browser di WhatsApp.
   function renderCalendarLinks() {
-    var start = SITE.date.replace(/-/g, '');
-    var d = new Date(Date.UTC(+SITE.date.slice(0, 4), +SITE.date.slice(5, 7) - 1, +SITE.date.slice(8, 10) + 1));
-    var end = d.toISOString().slice(0, 10).replace(/-/g, '');
-    var title = t('ics.title');
-    var desc = t('ics.description');
-    var loc = SITE.ceremony.mapsQuery;
-
-    var lines = [
-      'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//luciegigi.it//Matrimonio//IT', 'CALSCALE:GREGORIAN',
-      'BEGIN:VEVENT',
-      'UID:matrimonio-' + start + '@luciegigi.it',
-      'DTSTAMP:' + new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d+/, ''),
-      'DTSTART;VALUE=DATE:' + start,
-      'DTEND;VALUE=DATE:' + end,
-      'SUMMARY:' + icsEscape(title),
-      'LOCATION:' + icsEscape(loc),
-      'DESCRIPTION:' + icsEscape(desc),
-      'END:VEVENT', 'END:VCALENDAR'
-    ].map(icsFold).join('\r\n') + '\r\n';
-
-    var link = $('#ics-link');
-    if (link.dataset.url) URL.revokeObjectURL(link.dataset.url);
-    var url = URL.createObjectURL(new Blob([lines], { type: 'text/calendar;charset=utf-8' }));
-    link.dataset.url = url;
-    link.href = url;
-    link.setAttribute('download', 'matrimonio-lucia-luigi.ics');
+    $('#ics-link').href = 'assets/matrimonio-' + state.lang + '.ics';
   }
 
   /* ───── RSVP ───── */
@@ -223,7 +185,7 @@
   }
 
   function newRow() {
-    return { key: ++rowCounter, id: '', name: '', child: false, attending: null, diet: 'none', allergies: '' };
+    return { key: ++rowCounter, id: '', name: '', child: false, highchair: null, attending: null, diet: 'none', allergies: '' };
   }
 
   function blankDraft() { return { people: [newRow()], message: '' }; }
@@ -231,7 +193,7 @@
   function draftFrom(inv) {
     return {
       people: inv.people.map(function (p) {
-        return { key: ++rowCounter, id: p.id, name: p.name, child: !!p.child, attending: p.attending || null,
+        return { key: ++rowCounter, id: p.id, name: p.name, child: !!p.child, highchair: p.highchair || null, attending: p.attending || null,
                  diet: p.diet || 'none', allergies: p.allergies || '' };
       }),
       message: inv.message || ''
@@ -387,6 +349,17 @@
           autocomplete: 'off', 'aria-describedby': 'allergies-help-' + p.key,
           oninput: function (e) { p.allergies = e.target.value; } })));
 
+    // Domanda sul seggiolone: compare solo se la persona è segnata come bambino.
+    function chairOption(value, key) {
+      return h('label', null,
+        h('input', { type: 'radio', name: 'hc-' + p.key, value: value, checked: p.highchair === value,
+          onchange: function () { p.highchair = value; } }),
+        h('span', { text: t(key) }));
+    }
+    var chair = h('div', { class: 'field hc', hidden: !p.child },
+      h('p', { class: 'field__label', text: t('rsvp.highchair') }),
+      h('div', { class: 'choice' }, chairOption('yes', 'rsvp.yesWord'), chairOption('no', 'rsvp.noWord')));
+
     return h('fieldset', { class: 'person', 'data-key': p.key },
       h('legend', { text: fixed ? p.name : (i === 0 ? t('rsvp.you') : t('rsvp.person', { n: i + 1 })) }),
       fixed ? null : h('div', { class: 'field' },
@@ -395,8 +368,9 @@
           autocomplete: i === 0 ? 'name' : 'off',
           oninput: function (e) { p.name = e.target.value; } })),
       h('label', { class: 'check' },
-        h('input', { type: 'checkbox', checked: p.child, onchange: function (e) { p.child = e.target.checked; } }),
+        h('input', { type: 'checkbox', checked: p.child, onchange: function (e) { p.child = e.target.checked; chair.hidden = !p.child; } }),
         h('span', { text: t('rsvp.child') })),
+      chair,
       h('div', { class: 'choice' }, option('yes', 'rsvp.yes'), option('no', 'rsvp.no')),
       details,
       onRemove ? h('p', { class: 'person__remove' },
@@ -447,6 +421,7 @@
         var p = draft.people[i];
         if (!p.name.trim()) { problem(t('rsvp.nameMissing'), '#name-' + p.key); return; }
         if (!p.attending) { problem(t('rsvp.missing', { name: personLabel(p, i) }), 'fieldset[data-key="' + p.key + '"] input[type="radio"]'); return; }
+        if (p.child && p.attending === 'yes' && !p.highchair) { problem(t('rsvp.highchairMissing', { name: personLabel(p, i) }), 'fieldset[data-key="' + p.key + '"] .hc input'); return; }
       }
 
       button.disabled = true;
@@ -459,6 +434,7 @@
         message: draft.message,
         people: draft.people.map(function (p) {
           return { id: p.id || undefined, name: p.name.trim(), child: p.child, attending: p.attending,
+                   highchair: p.child && p.attending === 'yes' ? p.highchair : null,
                    diet: p.attending === 'yes' ? p.diet : 'none',
                    allergies: p.attending === 'yes' ? p.allergies.trim() : '' };
         })
@@ -644,12 +620,143 @@
     });
   }
 
+  /* ───── Mappa del viaggio di nozze ───── */
+
+  function setupTripMap() {
+    var data = window.TRIP_MAP;
+    var box = $('#trip-map');
+    if (!data || !box) return;
+    var NS = 'http://www.w3.org/2000/svg';
+    var W = data.width, H = data.height;
+    var photosOf = function (id) { return (SITE.tripPhotos && SITE.tripPhotos[id]) || []; };
+
+    function svgEl(name, attrs) {
+      var el = document.createElementNS(NS, name);
+      Object.keys(attrs || {}).forEach(function (k) { el.setAttribute(k, attrs[k]); });
+      return el;
+    }
+
+    // Disegno: un riquadro per paese (mare + terra) e i tragitti tratteggiati.
+    var svg = svgEl('svg', { viewBox: '0 0 ' + W + ' ' + H, 'aria-hidden': 'true', focusable: 'false' });
+    Object.keys(data.panels).forEach(function (key) {
+      var p = data.panels[key];
+      var clip = svgEl('clipPath', { id: 'trip-clip-' + key });
+      clip.append(svgEl('rect', { x: 0, y: p.y, width: W, height: p.height, rx: 14 }));
+      var g = svgEl('g', { 'clip-path': 'url(#trip-clip-' + key + ')' });
+      g.append(svgEl('rect', { class: 'trip__sea', x: 0, y: p.y, width: W, height: p.height }));
+      g.append(svgEl('path', { class: 'trip__land', d: p.land }));
+      svg.append(clip, g);
+      svg.append(svgEl('rect', { class: 'trip__frame', x: 0.75, y: p.y + 0.75, width: W - 1.5, height: p.height - 1.5, rx: 14 }));
+    });
+    data.routes.forEach(function (r) {
+      svg.append(svgEl('path', { class: 'trip__route trip__route--' + r.type, d: r.d }));
+    });
+    box.append(svg);
+
+    // Scritte dei paesi, segnaposto (bottoni veri: si usano anche con la tastiera) e fumetto.
+    [['japan', 'trip.jp'], ['thailand', 'trip.th']].forEach(function (pair) {
+      box.append(h('p', { class: 'trip__label', 'data-i18n': pair[1],
+        style: 'left:2.5%;top:' + ((data.panels[pair[0]].y / H) * 100 + 2.5) + '%' }));
+    });
+    var pop = h('div', { class: 'trip__pop', role: 'dialog', hidden: true });
+    var pins = {};
+    var stops = {};
+    var order = [];
+    document.querySelectorAll('#trip-legend .trip__stop').forEach(function (btn) {
+      var id = btn.getAttribute('data-city');
+      var c = data.cities[id];
+      if (!c) return;
+      order.push(id);
+      stops[id] = btn;
+      pins[id] = h('button', { type: 'button', class: 'trip__pin', 'data-city': id, text: String(order.length),
+        style: 'left:' + (c.x / W) * 100 + '%;top:' + (c.y / H) * 100 + '%' });
+      box.append(pins[id]);
+      var open = function (e) { e.stopPropagation(); select(id); };
+      pins[id].addEventListener('click', open);
+      btn.addEventListener('click', open);
+    });
+    box.append(pop);
+
+    var current = null;
+    var timer = null;
+
+    function textOf(btn, cls) { return btn.querySelector(cls).textContent; }
+
+    function select(id) {
+      current = id;
+      Object.keys(pins).forEach(function (k) {
+        pins[k].classList.toggle('is-active', k === id);
+        stops[k].classList.toggle('is-active', k === id);
+      });
+      var photos = photosOf(id);
+      var btn = stops[id];
+      clearInterval(timer);
+      var img = null;
+      if (photos.length) {
+        img = h('img', { class: 'trip__pop-photo', src: photos[0], alt: '' });
+        if (photos.length > 1) {
+          var n = 0;
+          timer = setInterval(function () { n = (n + 1) % photos.length; img.src = photos[n]; }, 3500);
+        }
+      }
+      pop.replaceChildren.apply(pop, [
+        h('button', { type: 'button', class: 'trip__pop-close', 'aria-label': t('trip.close'), text: '×',
+          onclick: function (e) { e.stopPropagation(); close(); } }),
+        img,
+        h('p', { class: 'trip__pop-title', text: textOf(btn, '.trip__city') }),
+        h('p', { class: 'trip__pop-meta', text: textOf(btn, '.trip__dates') + ' · ' + textOf(btn, '.trip__country') })
+      ].filter(Boolean));
+      pop.setAttribute('aria-label', textOf(btn, '.trip__city'));
+      pop.hidden = false;
+      place();
+    }
+
+    // Il fumetto sta sopra il segnaposto se c'è spazio, sotto altrimenti, e non esce mai dalla mappa.
+    function place() {
+      if (!current) return;
+      var c = data.cities[current];
+      var bw = box.clientWidth;
+      var px = (c.x / W) * bw;
+      var py = (c.y / H) * box.clientHeight;
+      var pw = pop.offsetWidth;
+      var ph = pop.offsetHeight;
+      var above = py - ph - 24 >= 4;
+      var left = Math.max(6, Math.min(px - pw / 2, bw - pw - 6));
+      pop.style.left = left + 'px';
+      pop.style.top = (above ? py - ph - 22 : py + 22) + 'px';
+      pop.style.setProperty('--tail', Math.max(16, Math.min(px - left, pw - 16)) + 'px');
+      pop.classList.toggle('trip__pop--above', above);
+      pop.classList.toggle('trip__pop--below', !above);
+    }
+
+    function close() {
+      current = null;
+      clearInterval(timer);
+      pop.hidden = true;
+      Object.keys(pins).forEach(function (k) { pins[k].classList.remove('is-active'); stops[k].classList.remove('is-active'); });
+    }
+
+    document.addEventListener('click', function (e) { if (current && !pop.contains(e.target)) close(); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && current) close(); });
+    window.addEventListener('resize', place);
+    // Cambio lingua: il fumetto aperto si riscrive nella nuova lingua.
+    document.querySelectorAll('.lang button').forEach(function (b) {
+      b.addEventListener('click', function () { if (current) select(current); });
+    });
+    applyI18n();
+  }
+
   /* ───── Foto d'apertura a scorrimento ───── */
 
   var SLIDE_MS = 6000;   // tempo tra una foto e l'altra (la dissolvenza dura 1,2 s, vedi CSS)
 
   function setupHeroSlides() {
-    var photos = SITE.heroPhotos || [];
+    var photos = (SITE.heroPhotos || []).slice();
+    // La prima (la foto del Save the Date) resta in testa, le altre cambiano ordine a ogni visita.
+    for (var k = photos.length - 1; k > 1; k--) {
+      var j = 1 + Math.floor(Math.random() * k);
+      var tmp = photos[k]; photos[k] = photos[j]; photos[j] = tmp;
+    }
     var frame = $('.hero__frame');
     var first = $('.hero__photo');
     if (photos.length < 2 || !frame || !first) return;
@@ -698,6 +805,7 @@
     setupContacts();
     setupGallery();
     setupHeroSlides();
+    setupTripMap();
 
     state.lang = pickInitialLang();
     applyI18n();

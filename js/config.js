@@ -48,8 +48,13 @@ window.SITE = {
     { src: 'assets/hero/12.jpg' },
     { src: 'assets/hero/13.jpg' },
     { src: 'assets/hero/14.jpg' },
-    { src: 'assets/hero/15.jpg' }
+    { src: 'assets/hero/15.jpg' },
+    { src: 'assets/hero/16.jpg' }
   ],
+
+  // Foto delle tappe del viaggio di nozze, mostrate quando si tocca una città sulla mappa (da una a quattro per città).
+  // Esempio: { tokyo: ['assets/trip/tokyo-1.jpg', 'assets/trip/tokyo-2.jpg'], kyoto: [...], osaka: [...], samui: [...] }
+  tripPhotos: {},
 
   // Contatti: la sezione compare solo se c'è almeno un contatto.
   // Esempio: { name: 'Lucia', phone: '+39 333 0000000' }

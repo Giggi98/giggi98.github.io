@@ -311,6 +311,40 @@ test('checkGuests: nomi doppi, ordine diverso, refusi, bambini soli, righe senza
   assert.ok(dup[1].includes('la più recente è la riga'), dup[1]);
 });
 
+test('seggiolone: salvato per i bimbi che vengono, riletto, in riepilogo e nella mail', () => {
+  const env = seeded();
+  const res = post(env, newRsvp({ people: [
+    { name: 'Anna Verdi', attending: 'yes' },
+    { name: 'Teo Verdi', child: true, attending: 'yes', highchair: 'no' },
+    { name: 'Ida Verdi', child: true, attending: 'yes', highchair: 'yes' },
+    { name: 'Gino Verdi', child: true, attending: 'no', highchair: 'yes' },       // non viene: ignorato
+    { name: 'Lia Verdi', attending: 'yes', highchair: 'yes' }                    // non è un bimbo: ignorato
+  ] }));
+  assert.strictEqual(res.ok, true);
+  assert.deepStrictEqual(res.invite.people.map((p) => p.highchair), [null, 'no', 'yes', null, null]);
+  const rows = env.sheets.Invitati.data.slice(5);
+  assert.deepStrictEqual(rows.map((r) => r[11]), ['', 'No', 'Sì', '', '']);
+  assert.ok(env.mails[0].body.includes('Teo Verdi: ci sarà (bambino, serve un seggiolone)'), env.mails[0].body);
+  assert.ok(env.mails[0].body.includes('Ida Verdi: ci sarà (bambino, porta il seggiolone)'));
+  // senza il campo (vecchio sito in cache) il bimbo si salva comunque, con la cella vuota
+  const old = post(env, newRsvp({ people: [{ name: 'Pia Neri', child: true, attending: 'yes' }] }));
+  assert.strictEqual(old.ok, true);
+  assert.strictEqual(old.invite.people[0].highchair, null);
+  // modifica: da "No" a "Sì"
+  const people = res.invite.people.map((p) => ({ id: p.id, name: p.name, child: p.child, attending: p.attending, highchair: p.name === 'Teo Verdi' ? 'yes' : p.highchair }));
+  assert.strictEqual(post(env, newRsvp({ code: res.code, people })).ok, true);
+  assert.strictEqual(env.sheets.Invitati.data[6][11], 'Sì');
+});
+
+test('setup: intestazione Seggiolone e righe di riepilogo', () => {
+  const env = makeEnv();
+  env.sandbox.setup();
+  assert.strictEqual(env.sheets.Invitati.data[0][11], 'Seggiolone');
+  const labels = env.sheets.Riepilogo.data.map((r) => r[0]);
+  assert.ok(labels.includes('Bimbi senza seggiolone (da fornire)'));
+  assert.ok(String(env.sheets.Riepilogo.data[labels.indexOf('Bimbi con seggiolone proprio')][1]).includes('L2:L,"Sì"'));
+});
+
 let failed = 0;
 tests.forEach(([name, fn]) => {
   try { fn(); console.log('ok   ' + name); } catch (e) { failed++; console.log('FAIL ' + name + '\n     ' + (e.stack || e).split('\n').slice(0, 3).join('\n     ')); }
