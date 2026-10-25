@@ -173,31 +173,35 @@
         <p class="lead" data-i18n="trip.lead">Dopo il matrimonio partiamo per il Giappone e la Thailandia.</p>
         <div class="trip">
           <div class="trip__map" id="trip-map"></div>
-          <ol class="trip__legend" id="trip-legend">
-            <li><button type="button" class="trip__stop" data-city="tokyo">
-              <span class="trip__num">1</span>
-              <span class="trip__city">Tokyo</span>
-              <span class="trip__dates" data-i18n="trip.d1">2–8 giugno</span>
-              <span class="trip__country" data-i18n="trip.jp" hidden>Giappone</span>
-            </button></li>
-            <li><button type="button" class="trip__stop" data-city="kyoto">
-              <span class="trip__num">2</span>
-              <span class="trip__city">Kyoto</span>
-              <span class="trip__dates" data-i18n="trip.d2">8–11 giugno</span>
-              <span class="trip__country" data-i18n="trip.jp" hidden>Giappone</span>
-            </button></li>
-            <li><button type="button" class="trip__stop" data-city="osaka">
-              <span class="trip__num">3</span>
-              <span class="trip__city">Osaka</span>
-              <span class="trip__dates" data-i18n="trip.d3">11–13 giugno</span>
-              <span class="trip__country" data-i18n="trip.jp" hidden>Giappone</span>
-            </button></li>
-            <li><button type="button" class="trip__stop" data-city="samui">
-              <span class="trip__num">4</span>
-              <span class="trip__city">Koh Samui</span>
-              <span class="trip__dates" data-i18n="trip.d4">13–18 giugno</span>
-              <span class="trip__country" data-i18n="trip.th" hidden>Thailandia</span>
-            </button></li>
+          <ol class="timeline trip__legend" id="trip-legend">
+            <li class="timeline__item" data-city="tokyo">
+              <p class="timeline__when" data-i18n="trip.d1">2–8 giugno</p>
+              <div>
+                <h3 class="timeline__title"><button type="button" class="trip__stop"><span class="trip__num">1</span><span class="trip__city">Tokyo</span></button></h3>
+                <p class="trip__country" data-i18n="trip.jp">Giappone</p>
+              </div>
+            </li>
+            <li class="timeline__item" data-city="kyoto">
+              <p class="timeline__when" data-i18n="trip.d2">8–11 giugno</p>
+              <div>
+                <h3 class="timeline__title"><button type="button" class="trip__stop"><span class="trip__num">2</span><span class="trip__city">Kyoto</span></button></h3>
+                <p class="trip__country" data-i18n="trip.jp">Giappone</p>
+              </div>
+            </li>
+            <li class="timeline__item" data-city="osaka">
+              <p class="timeline__when" data-i18n="trip.d3">11–13 giugno</p>
+              <div>
+                <h3 class="timeline__title"><button type="button" class="trip__stop"><span class="trip__num">3</span><span class="trip__city">Osaka</span></button></h3>
+                <p class="trip__country" data-i18n="trip.jp">Giappone</p>
+              </div>
+            </li>
+            <li class="timeline__item" data-city="samui">
+              <p class="timeline__when" data-i18n="trip.d4">13–18 giugno</p>
+              <div>
+                <h3 class="timeline__title"><button type="button" class="trip__stop"><span class="trip__num">4</span><span class="trip__city">Koh Samui</span></button></h3>
+                <p class="trip__country" data-i18n="trip.th">Thailandia</p>
+              </div>
+            </li>
           </ol>
         </div>
       </div>

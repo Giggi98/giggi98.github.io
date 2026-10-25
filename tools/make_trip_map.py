@@ -19,8 +19,8 @@ GAP = 70
 
 # Ogni riquadro mostra una zona (lon/lat) e i paesi da disegnare; l'altezza esce dalla scala.
 PANELS = {
-    'japan': {'lon': (134.2, 140.9), 'lat': (33.6, 36.8), 'countries': ['Japan']},
-    'thailand': {'lon': (96.5, 106.0), 'lat': (7.4, 11.6),
+    'japan': {'lon': (132.5, 142.0), 'lat': (33.0, 37.4), 'countries': ['Japan']},
+    'thailand': {'lon': (95.5, 108.0), 'lat': (6.0, 12.0),
                  'countries': ['Thailand', 'Cambodia', 'Malaysia', 'Myanmar', 'Vietnam', 'Laos']},
 }
 
@@ -31,6 +31,10 @@ CITIES = [
     ('osaka', 'japan', 135.50, 34.69),
     ('samui', 'thailand', 100.00, 9.50),
 ]
+
+
+# Kyoto e Osaka sono a 40 km: a questa scala i segnaposto si sovrapporrebbero, quindi si spostano un po' (in unità del disegno).
+PIN_NUDGE = {'kyoto': (12, -14), 'osaka': (-12, 14)}
 
 
 def rdp(points, eps):
@@ -109,7 +113,8 @@ def main():
     out['height'] = y_offset - GAP
     for cid, panel, lon, lat in CITIES:
         x, y = proj[panel](lon, lat)
-        out['cities'][cid] = {'x': round(x, 1), 'y': round(y, 1)}
+        dx, dy = PIN_NUDGE.get(cid, (0, 0))
+        out['cities'][cid] = {'x': round(x + dx, 1), 'y': round(y + dy, 1)}
 
     # tragitti: i primi due su terra (treno), l'ultimo in aereo con una curva verso il basso
     c = out['cities']

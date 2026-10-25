@@ -332,7 +332,7 @@
     function option(value, key) {
       return h('label', null,
         h('input', { type: 'radio', name: 'att-' + p.key, value: value, checked: p.attending === value,
-          onchange: function () { p.attending = value; details.hidden = value !== 'yes'; } }),
+          onchange: function () { p.attending = value; details.hidden = value !== 'yes'; updateChair(); } }),
         h('span', { text: t(key) }));
     }
 
@@ -349,14 +349,15 @@
           autocomplete: 'off', 'aria-describedby': 'allergies-help-' + p.key,
           oninput: function (e) { p.allergies = e.target.value; } })));
 
-    // Domanda sul seggiolone: compare solo se la persona è segnata come bambino.
     function chairOption(value, key) {
       return h('label', null,
         h('input', { type: 'radio', name: 'hc-' + p.key, value: value, checked: p.highchair === value,
           onchange: function () { p.highchair = value; } }),
         h('span', { text: t(key) }));
     }
-    var chair = h('div', { class: 'field hc', hidden: !p.child },
+    // Domanda sul seggiolone: solo per un bambino che viene ("Sì, ci sarò").
+    function updateChair() { chair.hidden = !(p.child && p.attending === 'yes'); }
+    var chair = h('div', { class: 'field hc', hidden: !(p.child && p.attending === 'yes') },
       h('p', { class: 'field__label', text: t('rsvp.highchair') }),
       h('div', { class: 'choice' }, chairOption('yes', 'rsvp.yesWord'), chairOption('no', 'rsvp.noWord')));
 
@@ -368,10 +369,10 @@
           autocomplete: i === 0 ? 'name' : 'off',
           oninput: function (e) { p.name = e.target.value; } })),
       h('label', { class: 'check' },
-        h('input', { type: 'checkbox', checked: p.child, onchange: function (e) { p.child = e.target.checked; chair.hidden = !p.child; } }),
+        h('input', { type: 'checkbox', checked: p.child, onchange: function (e) { p.child = e.target.checked; updateChair(); } }),
         h('span', { text: t('rsvp.child') })),
-      chair,
       h('div', { class: 'choice' }, option('yes', 'rsvp.yes'), option('no', 'rsvp.no')),
+      chair,
       details,
       onRemove ? h('p', { class: 'person__remove' },
         h('button', { type: 'button', class: 'linkbtn', onclick: onRemove, text: t('rsvp.remove') })) : null);
@@ -662,7 +663,7 @@
     var pins = {};
     var stops = {};
     var order = [];
-    document.querySelectorAll('#trip-legend .trip__stop').forEach(function (btn) {
+    document.querySelectorAll('#trip-legend [data-city]').forEach(function (btn) {
       var id = btn.getAttribute('data-city');
       var c = data.cities[id];
       if (!c) return;
@@ -673,7 +674,7 @@
       box.append(pins[id]);
       var open = function (e) { e.stopPropagation(); select(id); };
       pins[id].addEventListener('click', open);
-      btn.addEventListener('click', open);
+      btn.querySelector('.trip__stop').addEventListener('click', open);
     });
     box.append(pop);
 
@@ -704,7 +705,7 @@
           onclick: function (e) { e.stopPropagation(); close(); } }),
         img,
         h('p', { class: 'trip__pop-title', text: textOf(btn, '.trip__city') }),
-        h('p', { class: 'trip__pop-meta', text: textOf(btn, '.trip__dates') + ' · ' + textOf(btn, '.trip__country') })
+        h('p', { class: 'trip__pop-meta', text: textOf(btn, '.timeline__when') + ' · ' + textOf(btn, '.trip__country') })
       ].filter(Boolean));
       pop.setAttribute('aria-label', textOf(btn, '.trip__city'));
       pop.hidden = false;
