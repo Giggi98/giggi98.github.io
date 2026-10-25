@@ -293,10 +293,13 @@
   function renderIntro() {
     var intro = $('#rsvp-intro');
     var src = deadlineSource();
-    if (state.view === 'soon') intro.textContent = '';
-    else if (src && src.closed) intro.textContent = t('rsvp.introClosed', { deadline: fmtDeadline() });
-    else if (src && src.deadline) intro.textContent = t('rsvp.intro', { deadline: fmtDeadline() });
-    else intro.textContent = t('rsvp.introNoDate');
+    var key = src && src.closed ? 'rsvp.introClosed' : (src && src.deadline ? 'rsvp.intro' : 'rsvp.introNoDate');
+    if (state.view === 'soon') { intro.textContent = ''; return; }
+    // La data di scadenza va in grassetto: si spezza il testo dove cade e la si mette in un <strong>.
+    var marker = '\u0001';
+    var parts = t(key, { deadline: marker }).split(marker);
+    intro.replaceChildren(parts[0]);
+    if (parts.length > 1) intro.append(h('strong', { text: fmtDeadline() }), parts[1]);
   }
 
   function renderRsvp() {

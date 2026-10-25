@@ -57,8 +57,8 @@ window.I18N = {
 
     'rsvp.title': 'Conferma la tua presenza',
     'rsvp.open': 'RSVP',
-    'rsvp.intro': 'Compila il modulo per te e per chi viene con te. Puoi cambiare risposta quando vuoi, fino al {deadline}.',
-    'rsvp.introNoDate': 'Compila il modulo per te e per chi viene con te. Potrai cambiare risposta anche dopo averla inviata.',
+    'rsvp.intro': 'Compila il modulo per te e per chi viene con te.\nPuoi cambiare risposta quando vuoi, fino al {deadline}.',
+    'rsvp.introNoDate': 'Compila il modulo per te e per chi viene con te.\nPotrai cambiare risposta anche dopo averla inviata.',
     'rsvp.introClosed': 'Le risposte sono chiuse dal {deadline}.',
     'rsvp.loading': 'Cerco la tua risposta…',
     'rsvp.soon': 'La conferma di presenza aprirà a breve. Ti avviseremo noi.',
@@ -183,8 +183,8 @@ window.I18N = {
 
     'rsvp.title': 'Will you join us?',
     'rsvp.open': 'RSVP',
-    'rsvp.intro': 'Fill in the form for yourself and the people coming with you. You can change your answer any time until {deadline}.',
-    'rsvp.introNoDate': 'Fill in the form for yourself and the people coming with you. You’ll be able to change your answer after sending it.',
+    'rsvp.intro': 'Fill in the form for yourself and the people coming with you.\nYou can change your answer any time until {deadline}.',
+    'rsvp.introNoDate': 'Fill in the form for yourself and the people coming with you.\nYou’ll be able to change your answer after sending it.',
     'rsvp.introClosed': 'Replies have been closed since {deadline}.',
     'rsvp.loading': 'Looking for your answer…',
     'rsvp.soon': 'RSVP will open soon. We’ll let you know.',

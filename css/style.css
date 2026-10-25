@@ -346,6 +346,8 @@ a { color: inherit; }
   text-align: center;
 }
 .lead--light { color: var(--ink); }
+#rsvp-intro { white-space: pre-line; }
+#rsvp-intro strong { font-weight: 700; white-space: nowrap; }
 .textlink { text-underline-offset: .25em; text-decoration-thickness: 1px; }
 
 /* ───── Programma ───── */
