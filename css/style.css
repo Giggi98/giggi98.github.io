@@ -436,6 +436,7 @@ a { color: inherit; }
   align-items: center;
 }
 .place__text { text-align: center; }
+.place__blurb { font-style: italic; }
 .place__meta { margin-top: 1.2rem; }
 .place__meta strong { font-weight: 500; }
 .place__buttons { display: flex; flex-wrap: wrap; gap: .75rem; justify-content: center; }

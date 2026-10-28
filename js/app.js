@@ -136,7 +136,8 @@
       slot.removeAttribute('data-i18n');
       slot.classList.add('is-time');
       slot.textContent = rt;
-      when.removeAttribute('data-i18n');
+      when.hidden = false;
+      $('#reception-when-br').hidden = false;
       when.textContent = t('reception.whenTime', { time: rt });
     }
   }
@@ -156,8 +157,26 @@
   /* ───── Calendario ───── */
 
   // I file .ics sono in assets/ (li crea `node tools/make_ics.js`): un indirizzo vero si apre anche su iPhone e nei browser di WhatsApp.
+  // Su Android e sui computer non Apple il pulsante apre direttamente Google Calendar con l'evento già compilato
+  // (basta "Salva"); su iPhone, iPad e Mac apre il file .ics, che Safari trasforma subito nella schermata "Aggiungi al calendario".
+  // Nessun sito può inserire un evento in un calendario senza che la persona confermi.
   function renderCalendarLinks() {
-    $('#ics-link').href = 'assets/matrimonio-' + state.lang + '.ics';
+    var link = $('#ics-link');
+    var apple = /iPhone|iPad|iPod|Macintosh/.test(navigator.userAgent);
+    if (apple) {
+      link.href = 'assets/matrimonio-' + state.lang + '.ics';
+      link.removeAttribute('target');
+      return;
+    }
+    var start = SITE.date.replace(/-/g, '');
+    var next = new Date(Date.UTC(+SITE.date.slice(0, 4), +SITE.date.slice(5, 7) - 1, +SITE.date.slice(8, 10) + 1));
+    var end = next.toISOString().slice(0, 10).replace(/-/g, '');
+    link.href = 'https://calendar.google.com/calendar/render?action=TEMPLATE' +
+      '&text=' + encodeURIComponent(t('ics.title')) +
+      '&dates=' + start + '/' + end +
+      '&details=' + encodeURIComponent(t('ics.description')) +
+      '&location=' + encodeURIComponent(SITE.ceremony.mapsQuery);
+    link.setAttribute('target', '_blank');
   }
 
   /* ───── RSVP ───── */
