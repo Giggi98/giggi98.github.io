@@ -43,42 +43,7 @@ window.SITE = {
     { src: 'assets/hero/07.jpg' },
     { src: 'assets/hero/08.jpg' },
     { src: 'assets/hero/09.jpg' },
-    { src: 'assets/hero/10.jpg' },
-    { src: 'assets/hero/11.jpg' },
-    { src: 'assets/hero/12.jpg' },
-    { src: 'assets/hero/13.jpg' },
-    { src: 'assets/hero/14.jpg' },
-    { src: 'assets/hero/15.jpg' },
-    { src: 'assets/hero/16.jpg' },
-    { src: 'assets/hero/17.jpg' },
-    { src: 'assets/hero/18.jpg' },
-    { src: 'assets/hero/19.jpg' },
-    { src: 'assets/hero/20.jpg' },
-    { src: 'assets/hero/21.jpg' },
-    { src: 'assets/hero/22.jpg' },
-    { src: 'assets/hero/23.jpg' },
-    { src: 'assets/hero/24.jpg' },
-    { src: 'assets/hero/25.jpg' },
-    { src: 'assets/hero/26.jpg' },
-    { src: 'assets/hero/27.jpg' },
-    { src: 'assets/hero/28.jpg' },
-    { src: 'assets/hero/29.jpg' },
-    { src: 'assets/hero/30.jpg' },
-    { src: 'assets/hero/31.jpg' },
-    { src: 'assets/hero/32.jpg' },
-    { src: 'assets/hero/33.jpg' },
-    { src: 'assets/hero/34.jpg' },
-    { src: 'assets/hero/35.jpg' },
-    { src: 'assets/hero/36.jpg' },
-    { src: 'assets/hero/37.jpg' },
-    { src: 'assets/hero/38.jpg' },
-    { src: 'assets/hero/39.jpg' },
-    { src: 'assets/hero/40.jpg' },
-    { src: 'assets/hero/41.jpg' },
-    { src: 'assets/hero/42.jpg' },
-    { src: 'assets/hero/43.jpg' },
-    { src: 'assets/hero/44.jpg' },
-    { src: 'assets/hero/45.jpg' }
+    { src: 'assets/hero/10.jpg' }
   ],
 
   // Foto delle tappe del viaggio di nozze, mostrate quando si tocca una città sulla mappa (da una a quattro per città).
@@ -141,6 +106,7 @@ window.SITE = {
     { src: 'photos/42.jpg', thumb: 'photos/thumbs/42.jpg' },
     { src: 'photos/43.jpg', thumb: 'photos/thumbs/43.jpg' },
     { src: 'photos/44.jpg', thumb: 'photos/thumbs/44.jpg' },
-    { src: 'photos/45.jpg', thumb: 'photos/thumbs/45.jpg' }
+    { src: 'photos/45.jpg', thumb: 'photos/thumbs/45.jpg' },
+    { src: 'photos/46.jpg', thumb: 'photos/thumbs/46.jpg' }
   ]
 };
