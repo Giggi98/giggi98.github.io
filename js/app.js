@@ -642,36 +642,83 @@
 
   /* ───── Mappa del viaggio di nozze ───── */
 
-  // Aeroplano di linea stilizzato, di profilo, con la foto dei due sposi in un grande oblò.
-  function planeGlyph(svgEl, p) {
-    var g = svgEl('g', { class: 'trip__plane', transform: 'translate(' + p.x + ' ' + p.y + ') rotate(' + p.angle + ')' });
+  // Mezzi del viaggio (aereo di linea e treno), di profilo, con la foto dei due sposi in un grande oblò.
+  // L'oblò sta sempre in (0, -2) e non si specchia: se il mezzo va verso sinistra si gira solo la carrozzeria.
+  var vehicleCount = 0;
+  function vehicleGlyph(svgEl, kind) {
+    var n = ++vehicleCount;
+    var g = svgEl('g', { class: 'trip__vehicle', opacity: 0 });
+    var body = svgEl('g');
     var photo = (SITE.heroPhotos && SITE.heroPhotos[0] && SITE.heroPhotos[0].src) || 'assets/hero/01.jpg';
-    var cx = 30, cy = -2, r = 36;
-    var clip = svgEl('clipPath', { id: 'trip-plane-window' });
-    clip.append(svgEl('circle', { cx: cx, cy: cy, r: r }));
-    g.append(clip);
-    // deriva, piano di coda, ala lontana (dietro la fusoliera)
-    g.append(svgEl('path', { class: 'trip__plane-fin', d: 'M-182 -40 L-214 -120 L-184 -120 L-128 -42 Z' }));
-    g.append(svgEl('path', { class: 'trip__plane-fin', d: 'M-150 -14 L-212 -40 L-192 -44 L-118 -18 Z' }));
-    g.append(svgEl('path', { class: 'trip__plane-fin', d: 'M-6 -38 L-52 -74 L-30 -76 L30 -40 Z' }));
-    // fusoliera con il muso arrotondato a destra e la coda che sale a sinistra
-    g.append(svgEl('path', { class: 'trip__plane-body', d: 'M-190 -40 L110 -44 C158 -44 200 -22 200 4 C200 26 166 42 124 42 L-120 42 C-160 42 -186 20 -190 -40 Z' }));
-    g.append(svgEl('path', { class: 'trip__plane-stripe', d: 'M-150 18 L150 18' }));
-    // finestrini piccoli e vetro della cabina di pilotaggio
-    for (var x = -150; x <= 150; x += 24) {
-      if (Math.abs(x - cx) < r + 12) continue;
-      g.append(svgEl('circle', { class: 'trip__plane-win', cx: x, cy: -14, r: 6 }));
+    var r = 36;
+    var part = function (cls, d) { body.append(svgEl('path', { class: cls, d: d })); };
+    var inner = svgEl('g');
+    body.append(inner);
+    var add = function (el) { inner.append(el); };
+
+    if (kind === 'plane') {
+      inner.setAttribute('transform', 'translate(-30 0)');   // l'oblò del disegno è in x = 30
+      add(svgEl('path', { class: 'trip__v-light', d: 'M-182 -40 L-214 -120 L-184 -120 L-128 -42 Z' }));
+      add(svgEl('path', { class: 'trip__v-light', d: 'M-150 -14 L-212 -40 L-192 -44 L-118 -18 Z' }));
+      add(svgEl('path', { class: 'trip__v-light', d: 'M-6 -38 L-52 -74 L-30 -76 L30 -40 Z' }));
+      add(svgEl('path', { class: 'trip__v-body', d: 'M-190 -40 L110 -44 C158 -44 200 -22 200 4 C200 26 166 42 124 42 L-120 42 C-160 42 -186 20 -190 -40 Z' }));
+      add(svgEl('path', { class: 'trip__v-stripe', d: 'M-150 18 L150 18' }));
+      for (var x = -150; x <= 150; x += 24) {
+        if (Math.abs(x - 30) < r + 12) continue;
+        add(svgEl('circle', { class: 'trip__v-win', cx: x, cy: -14, r: 6 }));
+      }
+      add(svgEl('path', { class: 'trip__v-win', d: 'M162 -26 C176 -22 186 -14 190 -6 L166 -6 Z' }));
+    } else {
+      // treno ad alta velocità: muso lungo e affusolato a destra
+      add(svgEl('rect', { class: 'trip__v-dark', x: -170, y: 34, width: 70, height: 16, rx: 8 }));
+      add(svgEl('rect', { class: 'trip__v-dark', x: 80, y: 34, width: 70, height: 16, rx: 8 }));
+      ['-152', '-118', '98', '132'].forEach(function (cx) {
+        add(svgEl('circle', { class: 'trip__v-wheel', cx: cx, cy: 50, r: 11 }));
+      });
+      add(svgEl('path', { class: 'trip__v-body', d: 'M-196 -36 C-196 -44 -190 -46 -182 -46 L70 -46 C150 -46 206 -6 214 30 C216 38 210 42 200 42 L-182 42 C-190 42 -196 38 -196 30 Z' }));
+      add(svgEl('path', { class: 'trip__v-stripe2', d: 'M-196 20 L188 20 C196 20 206 24 212 30' }));
+      for (var wx = -176; wx <= 110; wx += 30) {
+        if (Math.abs(wx + 12) < r + 14) continue;
+        add(svgEl('rect', { class: 'trip__v-win', x: wx, y: -28, width: 18, height: 22, rx: 4 }));
+      }
+      add(svgEl('path', { class: 'trip__v-win', d: 'M128 -36 C160 -30 184 -14 194 0 L140 0 Z' }));
     }
-    g.append(svgEl('path', { class: 'trip__plane-win', d: 'M162 -26 C176 -22 186 -14 190 -6 L166 -6 Z' }));
-    // oblò con la foto
-    g.append(svgEl('circle', { class: 'trip__plane-ring', cx: cx, cy: cy, r: r + 7 }));
-    g.append(svgEl('image', { href: photo, x: cx - 66, y: cy - 44, width: 120, height: 90, preserveAspectRatio: 'xMidYMid slice', 'clip-path': 'url(#trip-plane-window)' }));
-    g.append(svgEl('circle', { class: 'trip__plane-rim', cx: cx, cy: cy, r: r }));
-    // ala vicina e motore (davanti alla fusoliera, sotto l'oblò)
-    g.append(svgEl('path', { class: 'trip__plane-wing', d: 'M-30 22 L-130 112 L-92 114 L28 24 Z' }));
-    g.append(svgEl('rect', { class: 'trip__plane-engine', x: -98, y: 70, width: 52, height: 22, rx: 11 }));
-    return g;
+    var clipId = 'trip-win-' + n;
+    var clip = svgEl('clipPath', { id: clipId });
+    clip.append(svgEl('circle', { cx: 0, cy: -2, r: r }));
+    g.append(clip, body);
+    g.append(svgEl('circle', { class: 'trip__v-ring', cx: 0, cy: -2, r: r + 7 }));
+    g.append(svgEl('image', { href: photo, x: -66, y: -46, width: 120, height: 90, preserveAspectRatio: 'xMidYMid slice', 'clip-path': 'url(#' + clipId + ')' }));
+    g.append(svgEl('circle', { class: 'trip__v-rim', cx: 0, cy: -2, r: r }));
+    if (kind === 'plane') {
+      // ala vicina e motore davanti all'oblò (nella stessa carrozzeria, quindi si specchiano con lei)
+      var front = svgEl('g', { transform: 'translate(-30 0)' });
+      front.append(svgEl('path', { class: 'trip__v-light', d: 'M-30 22 L-130 112 L-92 114 L28 24 Z' }));
+      front.append(svgEl('rect', { class: 'trip__v-body', x: -98, y: 70, width: 52, height: 22, rx: 11 }));
+      var frontWrap = svgEl('g');
+      frontWrap.append(front);
+      g.append(frontWrap);
+      return { g: g, flips: [body, frontWrap] };
+    }
+    return { g: g, flips: [body] };
   }
+
+  var ease = function (t) { return t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; };
+
+  function animate(ms, step) {
+    return new Promise(function (done) {
+      var t0 = null;
+      function frame(now) {
+        if (t0 === null) t0 = now;
+        var p = Math.min(1, (now - t0) / ms);
+        step(p);
+        if (p < 1) requestAnimationFrame(frame); else done();
+      }
+      requestAnimationFrame(frame);
+    });
+  }
+
+  var wait = function (ms) { return new Promise(function (done) { setTimeout(done, ms); }); };
 
   function setupTripMap() {
     var data = window.TRIP_MAP;
@@ -702,14 +749,97 @@
       svg.append(clip, g);
       svg.append(svgEl('rect', { class: 'trip__frame', x: 0.75, y: p.y + 0.75, width: W - 1.5, height: p.height - 1.5, rx: 14 }));
     });
-    data.routes.forEach(function (r) {
-      svg.append(svgEl('path', { class: 'trip__route trip__route--' + r.type, d: r.d }));
+    // Tragitti in ordine di viaggio: arrivo in aereo a Tokyo, treno fino a Kyoto, Kyoto-Osaka, aereo fino a Koh Samui.
+    // Ogni tragitto si "disegna" con una maschera; i mezzi lo percorrono uno dopo l'altro e alla fine restano a metà strada
+    // (l'ultimo aereo un po' più avanti, per non coprire la scritta GIAPPONE).
+    var legs = [];
+    var defs = svgEl('defs');
+    svg.append(defs);
+    [
+      data.arrival && { d: data.arrival.d, type: 'flight', vehicle: 'plane', scale: 0.95, ms: 2600, stop: 'tokyo' },
+      { d: data.routes[0].d, type: data.routes[0].type, vehicle: 'train', scale: 0.62, ms: 2400, stop: 'kyoto' },
+      { d: data.routes[1].d, type: data.routes[1].type, vehicle: null, ms: 700, stop: 'osaka' },
+      { d: data.routes[2].d, type: data.routes[2].type, vehicle: 'plane', scale: 0.8, ms: 2600, stop: 'samui', rest: 0.62 }
+    ].filter(Boolean).forEach(function (leg, i) {
+      var reveal = svgEl('path', { d: leg.d, fill: 'none', stroke: '#fff', 'stroke-width': 40, 'stroke-linecap': 'round' });
+      var mask = svgEl('mask', { id: 'trip-reveal-' + i, maskUnits: 'userSpaceOnUse', x: -200, y: -200, width: W + 400, height: H + 400 });
+      mask.append(reveal);
+      defs.append(mask);
+      leg.path = svgEl('path', { class: 'trip__route trip__route--' + leg.type, d: leg.d, mask: 'url(#trip-reveal-' + i + ')' });
+      leg.reveal = reveal;
+      svg.append(leg.path);
+      legs.push(leg);
     });
-    if (data.arrival) {
-      svg.append(svgEl('path', { class: 'trip__route trip__route--flight', d: data.arrival.d }));
-      svg.append(planeGlyph(svgEl, data.arrival.plane));
-    }
+    legs.forEach(function (leg) {
+      if (!leg.vehicle) return;
+      leg.v = vehicleGlyph(svgEl, leg.vehicle);
+      svg.append(leg.v.g);
+    });
     box.append(svg);
+
+    // Misure dei tragitti (servono quando l'SVG è nella pagina).
+    legs.forEach(function (leg) {
+      leg.len = leg.path.getTotalLength();
+      var a = leg.path.getPointAtLength(0), b = leg.path.getPointAtLength(leg.len);
+      leg.left = b.x < a.x;   // va verso sinistra: la carrozzeria si specchia
+      leg.reveal.setAttribute('stroke-dasharray', leg.len + ' ' + leg.len);
+      if (leg.v) leg.v.flips.forEach(function (el) { el.setAttribute('transform', leg.left ? 'scale(-1 1)' : ''); });
+    });
+
+    function drawn(leg, p) { leg.reveal.setAttribute('stroke-dashoffset', leg.len * (1 - p)); }
+
+    function park(leg, t, opacity) {
+      if (!leg.v) return;
+      var at = leg.len * t;
+      var a = leg.path.getPointAtLength(Math.max(0, at - 4));
+      var b = leg.path.getPointAtLength(Math.min(leg.len, at + 4));
+      var pt = leg.path.getPointAtLength(at);
+      var angle = Math.atan2(b.y - a.y, b.x - a.x) * 180 / Math.PI;
+      if (leg.left) angle -= 180;
+      if (angle > 180) angle -= 360;
+      if (angle < -180) angle += 360;
+      angle = Math.max(-28, Math.min(28, angle));   // inclinazione contenuta: la foto resta dritta
+      leg.v.g.setAttribute('transform', 'translate(' + pt.x.toFixed(1) + ' ' + pt.y.toFixed(1) + ') rotate(' + angle.toFixed(1) + ') scale(' + leg.scale + ')');
+      leg.v.g.setAttribute('opacity', opacity);
+    }
+
+    function finalState() {
+      legs.forEach(function (leg) { drawn(leg, 1); park(leg, leg.rest || 0.5, 1); });
+    }
+
+    var running = false;
+    function journey() {
+      if (running) return;
+      running = true;
+      replay.hidden = true;
+      legs.forEach(function (leg) { drawn(leg, 0); park(leg, 0, 0); });
+      var chain = wait(300);
+      legs.forEach(function (leg) {
+        chain = chain.then(function () {
+          return animate(leg.ms, function (p) {
+            var e = ease(p);
+            drawn(leg, e);
+            park(leg, e, Math.min(1, p * 8, (1 - p) * 6));
+          });
+        }).then(function () {
+          var pin = pins[leg.stop];
+          if (pin) {
+            pin.classList.add('is-hit');
+            setTimeout(function () { pin.classList.remove('is-hit'); }, 650);
+          }
+          return wait(250);
+        });
+      });
+      chain.then(function () {
+        return animate(700, function (p) { legs.forEach(function (leg) { park(leg, leg.rest || 0.5, p); }); });
+      }).then(function () {
+        running = false;
+        replay.hidden = false;
+      });
+    }
+
+    var replay = h('button', { type: 'button', class: 'linkbtn trip__replay', 'data-i18n': 'trip.replay', hidden: true,
+      onclick: function () { journey(); } });
 
     // Scritte dei paesi, segnaposto (bottoni veri: si usano anche con la tastiera) e fumetto.
     [['japan', 'trip.jp'], ['thailand', 'trip.th']].forEach(function (pair) {
@@ -806,6 +936,20 @@
     refreshLabels();
     wrap.classList.add('has-map', 'is-new');
     $('#trip-hint').hidden = false;
+    box.after(h('p', { class: 'trip__replay-wrap' }, replay));
+
+    // Il viaggio parte quando la mappa entra nello schermo; chi ha chiesto meno movimento la vede già completa.
+    var still = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (still || !('IntersectionObserver' in window)) {
+      finalState();
+      replay.hidden = still;
+    } else {
+      legs.forEach(function (leg) { drawn(leg, 0); park(leg, 0, 0); });
+      var io = new IntersectionObserver(function (entries) {
+        if (entries.some(function (en) { return en.isIntersecting; })) { io.disconnect(); journey(); }
+      }, { threshold: 0.35 });
+      io.observe(box);
+    }
 
     document.addEventListener('click', function (e) { if (current && !pop.contains(e.target)) close(); });
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && current) close(); });

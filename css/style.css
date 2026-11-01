@@ -648,14 +648,20 @@ a { color: inherit; }
 .trip__frame { fill: none; stroke: var(--blanket); stroke-width: 2; }
 .trip__route { fill: none; stroke: var(--ink); stroke-width: 3.5; stroke-linecap: round; stroke-dasharray: 11 10; }
 .trip__route--flight { stroke-dasharray: 3 13; }
-.trip__plane-body { fill: #fff; stroke: var(--ink); stroke-width: 5; stroke-linejoin: round; }
-.trip__plane-fin, .trip__plane-wing { fill: #d6e4ee; stroke: var(--ink); stroke-width: 5; stroke-linejoin: round; }
-.trip__plane-engine { fill: #fff; stroke: var(--ink); stroke-width: 5; }
-.trip__plane-stripe { fill: none; stroke: var(--peach); stroke-width: 7; stroke-linecap: round; }
-.trip__plane-win { fill: #8cb9ce; stroke: var(--ink); stroke-width: 2.5; }
-.trip__plane-ring { fill: #fff; stroke: var(--ink); stroke-width: 5; }
-.trip__plane-rim { fill: none; stroke: var(--blanket); stroke-width: 5; }
-.trip__plane { filter: drop-shadow(0 4px 6px rgba(18, 48, 68, .35)); pointer-events: none; }
+.trip__v-body { fill: #fff; stroke: var(--ink); stroke-width: 5; stroke-linejoin: round; }
+.trip__v-light { fill: #d6e4ee; stroke: var(--ink); stroke-width: 5; stroke-linejoin: round; }
+.trip__v-dark { fill: var(--blanket); stroke: var(--ink); stroke-width: 4; }
+.trip__v-wheel { fill: var(--ink); stroke: #fff; stroke-width: 3; }
+.trip__v-stripe { fill: none; stroke: var(--peach); stroke-width: 7; stroke-linecap: round; }
+.trip__v-stripe2 { fill: none; stroke: var(--blanket); stroke-width: 9; stroke-linecap: round; }
+.trip__v-win { fill: #8cb9ce; stroke: var(--ink); stroke-width: 2.5; }
+.trip__v-ring { fill: #fff; stroke: var(--ink); stroke-width: 5; }
+.trip__v-rim { fill: none; stroke: var(--blanket); stroke-width: 5; }
+.trip__vehicle { filter: drop-shadow(0 4px 6px rgba(18, 48, 68, .35)); pointer-events: none; }
+.trip__pin.is-hit .trip__pin-num { animation: pin-hit .65s ease-out; }
+@keyframes pin-hit { 0% { transform: scale(1); } 40% { transform: scale(1.45); } 100% { transform: scale(1); } }
+.trip__replay-wrap { margin: .8rem 0 0; text-align: center; }
+.trip__replay { font-size: 1rem; }
 .trip__label {
   position: absolute;
   margin: 0;
