@@ -118,6 +118,9 @@ a { color: inherit; }
   -webkit-backdrop-filter: blur(8px);
   border-bottom: 1px solid rgba(51, 92, 114, .16);
 }
+/* nel logo la "&" è più piccola e con lo stesso spazio verso la L e verso la G */
+.bar__amp { display: inline-block; font-size: .6em; margin: 0 .02em 0 .04em; vertical-align: .12em; }
+.bar__logo .l-cap { margin-right: 0; }
 .bar__logo {
   font-family: var(--script);
   font-size: 1.8rem;
