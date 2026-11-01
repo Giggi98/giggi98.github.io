@@ -1,6 +1,11 @@
 /* Luci & Gigi · palette e carattere presi dal Save the Date */
 
 @font-face {
+  font-family: 'Luci L Script';
+  src: url('../fonts/Parisienne-L.woff2') format('woff2');
+  font-display: swap;
+}
+@font-face {
   font-family: 'Playball';
   src: url('../fonts/Playball.woff2') format('woff2');
   font-weight: 400;
@@ -113,7 +118,6 @@ a { color: inherit; }
   -webkit-backdrop-filter: blur(8px);
   border-bottom: 1px solid rgba(51, 92, 114, .16);
 }
-.bar__logo .l-glyph { height: 1.05em; vertical-align: -.12em; filter: none; }
 .bar__logo {
   font-family: var(--script);
   font-size: 1.8rem;
@@ -440,9 +444,8 @@ a { color: inherit; }
 .place__blurb { font-style: italic; }
 .person .hc { margin-top: 1.6rem; }
 .person .hc .field__label { margin-bottom: .6rem; }
-/* La L di "Luci" è disegnata a mano (corsivo scolastico, come nell'immagine di riferimento): Playball ne ha una molto diversa. */
-.l-glyph { display: inline-block; height: 1.02em; width: auto; vertical-align: -.17em; overflow: visible; margin-right: -.04em; filter: drop-shadow(.03em .06em .05em rgba(18, 48, 68, .5)); }
-.l-glyph path { fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; }
+/* La L di "Luci" ha un carattere suo: il corsivo con occhiello in alto e anello in basso come la L scolastica (Parisienne, sola lettera L). */
+.l-cap { font-family: 'Luci L Script', var(--script); font-size: 1.12em; line-height: 0; -webkit-text-stroke: .02em currentColor; margin-right: -.03em; }
 .place__meta { margin-top: 1.2rem; }
 .place__meta strong { font-weight: 500; }
 .place__buttons { display: flex; flex-wrap: wrap; gap: .75rem; justify-content: center; }

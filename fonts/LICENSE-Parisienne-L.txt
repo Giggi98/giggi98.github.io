@@ -1,0 +1,4 @@
+Parisienne-L.woff2 contiene la sola lettera "L" del carattere Parisienne
+Copyright (c) 2012 by Brian J. Bonislawsky DBA Astigmatic (AOETI), con licenza SIL Open Font License 1.1.
+Testo della licenza: https://openfontlicense.org/open-font-license-official-text/
+Il file è un sottoinsieme modificato (una sola lettera) e porta un nome interno diverso, come richiede la licenza.
