@@ -669,19 +669,18 @@
       }
       add(svgEl('path', { class: 'trip__v-win', d: 'M162 -26 C176 -22 186 -14 190 -6 L166 -6 Z' }));
     } else {
-      // treno ad alta velocità: muso lungo e affusolato a destra
-      add(svgEl('rect', { class: 'trip__v-dark', x: -170, y: 34, width: 70, height: 16, rx: 8 }));
-      add(svgEl('rect', { class: 'trip__v-dark', x: 80, y: 34, width: 70, height: 16, rx: 8 }));
-      ['-152', '-118', '98', '132'].forEach(function (cx) {
-        add(svgEl('circle', { class: 'trip__v-wheel', cx: cx, cy: 50, r: 11 }));
+      // treno ad alta velocità, corto: color pesca con banda blu, muso affusolato a destra
+      add(svgEl('rect', { class: 'trip__v-dark', x: -122, y: 34, width: 56, height: 16, rx: 8 }));
+      add(svgEl('rect', { class: 'trip__v-dark', x: 60, y: 34, width: 56, height: 16, rx: 8 }));
+      ['-108', '-80', '74', '102'].forEach(function (cx) {
+        add(svgEl('circle', { class: 'trip__v-wheel', cx: cx, cy: 50, r: 10 }));
       });
-      add(svgEl('path', { class: 'trip__v-body', d: 'M-196 -36 C-196 -44 -190 -46 -182 -46 L70 -46 C150 -46 206 -6 214 30 C216 38 210 42 200 42 L-182 42 C-190 42 -196 38 -196 30 Z' }));
-      add(svgEl('path', { class: 'trip__v-stripe2', d: 'M-196 20 L188 20 C196 20 206 24 212 30' }));
-      for (var wx = -176; wx <= 110; wx += 30) {
-        if (Math.abs(wx + 12) < r + 14) continue;
+      add(svgEl('path', { class: 'trip__v-train', d: 'M-140 -36 C-140 -44 -134 -46 -126 -46 L52 -46 C112 -46 150 -8 156 28 C158 38 152 42 142 42 L-126 42 C-134 42 -140 38 -140 30 Z' }));
+      add(svgEl('path', { class: 'trip__v-stripe2', d: 'M-140 20 L132 20 C140 20 150 24 154 30' }));
+      [-124, -96, 52].forEach(function (wx) {
         add(svgEl('rect', { class: 'trip__v-win', x: wx, y: -28, width: 18, height: 22, rx: 4 }));
-      }
-      add(svgEl('path', { class: 'trip__v-win', d: 'M128 -36 C160 -30 184 -14 194 0 L140 0 Z' }));
+      });
+      add(svgEl('path', { class: 'trip__v-win', d: 'M86 -36 C112 -30 132 -14 140 0 L94 0 Z' }));
     }
     var clipId = 'trip-win-' + n;
     var clip = svgEl('clipPath', { id: clipId });
@@ -756,10 +755,10 @@
     var defs = svgEl('defs');
     svg.append(defs);
     [
-      data.arrival && { d: data.arrival.d, type: 'flight', vehicle: 'plane', scale: 0.95, ms: 2600, stop: 'tokyo' },
-      { d: data.routes[0].d, type: data.routes[0].type, vehicle: 'train', scale: 0.62, ms: 2400, stop: 'kyoto' },
-      { d: data.routes[1].d, type: data.routes[1].type, vehicle: null, ms: 700, stop: 'osaka' },
-      { d: data.routes[2].d, type: data.routes[2].type, vehicle: 'plane', scale: 0.8, ms: 2600, stop: 'samui', rest: 0.62 }
+      data.arrival && { d: data.arrival.d, type: 'flight', vehicle: 'plane', scale: 0.7, ms: 3400, stop: 'tokyo' },
+      { d: data.routes[0].d, type: data.routes[0].type, vehicle: 'train', scale: 0.72, ms: 3000, stop: 'kyoto' },
+      { d: data.routes[1].d, type: data.routes[1].type, vehicle: null, ms: 950, stop: 'osaka' },
+      { d: data.routes[2].d, type: data.routes[2].type, vehicle: 'plane', scale: 0.62, ms: 3400, stop: 'samui', rest: 0.62 }
     ].filter(Boolean).forEach(function (leg, i) {
       var reveal = svgEl('path', { d: leg.d, fill: 'none', stroke: '#fff', 'stroke-width': 40, 'stroke-linecap': 'round' });
       var mask = svgEl('mask', { id: 'trip-reveal-' + i, maskUnits: 'userSpaceOnUse', x: -200, y: -200, width: W + 400, height: H + 400 });
@@ -823,15 +822,16 @@
           });
         }).then(function () {
           var pin = pins[leg.stop];
-          if (pin) {
-            pin.classList.add('is-hit');
-            setTimeout(function () { pin.classList.remove('is-hit'); }, 650);
-          }
-          return wait(250);
+          if (!pin) return wait(250);
+          pin.classList.add('is-hit');
+          setTimeout(function () { pin.classList.remove('is-hit'); }, 650);
+          // All'arrivo si apre per poco l'anteprima della tappa (foto, date), poi si riparte.
+          select(leg.stop, true);
+          return wait(2400).then(function () { if (current === leg.stop) close(); return wait(400); });
         });
       });
       chain.then(function () {
-        return animate(700, function (p) { legs.forEach(function (leg) { park(leg, leg.rest || 0.5, p); }); });
+        return animate(950, function (p) { legs.forEach(function (leg) { park(leg, leg.rest || 0.5, p); }); });
       }).then(function () {
         running = false;
         replay.hidden = false;
@@ -872,9 +872,10 @@
 
     function textOf(btn, cls) { return btn.querySelector(cls).textContent; }
 
-    function select(id) {
+    // auto: aperto dall'animazione del viaggio, non da chi visita (i numeri continuano a pulsare).
+    function select(id, auto) {
       current = id;
-      wrap.classList.remove('is-new');
+      if (!auto) wrap.classList.remove('is-new');
       Object.keys(pins).forEach(function (k) {
         pins[k].classList.toggle('is-active', k === id);
         stops[k].classList.toggle('is-active', k === id);

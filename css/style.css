@@ -649,6 +649,7 @@ a { color: inherit; }
 .trip__route { fill: none; stroke: var(--ink); stroke-width: 3.5; stroke-linecap: round; stroke-dasharray: 11 10; }
 .trip__route--flight { stroke-dasharray: 3 13; }
 .trip__v-body { fill: #fff; stroke: var(--ink); stroke-width: 5; stroke-linejoin: round; }
+.trip__v-train { fill: #e8b8a6; stroke: var(--ink); stroke-width: 5; stroke-linejoin: round; }
 .trip__v-light { fill: #d6e4ee; stroke: var(--ink); stroke-width: 5; stroke-linejoin: round; }
 .trip__v-dark { fill: var(--blanket); stroke: var(--ink); stroke-width: 4; }
 .trip__v-wheel { fill: var(--ink); stroke: #fff; stroke-width: 3; }
