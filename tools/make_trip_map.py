@@ -19,7 +19,7 @@ GAP = 70
 
 # Ogni riquadro mostra una zona (lon/lat) e i paesi da disegnare; l'altezza esce dalla scala.
 PANELS = {
-    'japan': {'lon': (132.5, 142.0), 'lat': (33.0, 37.4), 'countries': ['Japan']},
+    'japan': {'lon': (132.5, 142.0), 'lat': (33.0, 38.9), 'countries': ['Japan']},
     'thailand': {'lon': (95.5, 108.0), 'lat': (6.0, 12.0),
                  'countries': ['Thailand', 'Cambodia', 'Malaysia', 'Myanmar', 'Vietnam', 'Laos']},
 }
@@ -124,6 +124,22 @@ def main():
         n = math.hypot(dx, dy) or 1
         cx, cy = mx - dy / n * bend, my + dx / n * bend
         return f"M{a['x']} {a['y']}Q{cx:.1f} {cy:.1f} {b['x']} {b['y']}"
+    # Arrivo dall'Italia: un arco che entra dal bordo sinistro della mappa e finisce su Tokyo; a metà c'è l'aeroplano.
+    t0, k0 = c['tokyo'], out['panels']['japan']
+    start = (-30.0, k0['y'] + 250.0)
+    ctrl = ((start[0] + t0['x']) / 2, k0['y'] + 20.0)
+    end = (t0['x'], t0['y'])
+    def quad(t):
+        u = 1 - t
+        return (u * u * start[0] + 2 * u * t * ctrl[0] + t * t * end[0],
+                u * u * start[1] + 2 * u * t * ctrl[1] + t * t * end[1])
+    px, py = quad(0.5)
+    tx = (ctrl[0] - start[0]) + (end[0] - ctrl[0])     # tangente a metà arco = fine - inizio
+    ty = (ctrl[1] - start[1]) + (end[1] - ctrl[1])
+    out['arrival'] = {
+        'd': f"M{start[0]:.1f} {start[1]:.1f}Q{ctrl[0]:.1f} {ctrl[1]:.1f} {end[0]:.1f} {end[1]:.1f}",
+        'plane': {'x': round(px, 1), 'y': round(py, 1), 'angle': round(math.degrees(math.atan2(ty, tx)), 1)},
+    }
     out['routes'] = [
         {'type': 'train', 'd': curve(c['tokyo'], c['kyoto'], -30)},
         {'type': 'train', 'd': curve(c['kyoto'], c['osaka'], 8)},

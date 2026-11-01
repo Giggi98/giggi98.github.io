@@ -46,6 +46,35 @@ var CONFIG_DEFAULTS = [
   ['causale', '', 'Causale suggerita per il bonifico (facoltativa)']
 ];
 
+/* ───────────── Formule: separatore degli argomenti secondo la lingua del foglio ───────────── */
+
+/**
+ * Nei fogli con impostazione internazionale Italia (e in molte altre) le formule scritte dallo script vogliono ";" tra gli argomenti,
+ * mentre in quelli in inglese vogliono ",". Invece di indovinare dalla lingua, si prova: si scrive =SUM(1,2) in una cella
+ * di prova e si guarda se dà errore.
+ */
+function formulaSeparator(ss) {
+  var sheet = ss.getSheetByName(SHEET_SUMMARY) || ss.insertSheet(SHEET_SUMMARY);
+  var cell = sheet.getRange(1, 12);
+  cell.setFormula('=SUM(1,2)');
+  SpreadsheetApp.flush();
+  var failed = String(cell.getValue()).charAt(0) === '#';
+  cell.clear();
+  return failed ? ';' : ',';
+}
+
+// Converte le virgole tra gli argomenti in ";" (fuori dalle virgolette) quando serve.
+function fx(formula, sep) {
+  if (sep === ',') return formula;
+  var out = '', inString = false;
+  for (var i = 0; i < formula.length; i++) {
+    var ch = formula.charAt(i);
+    if (ch === '"') inString = !inString;
+    out += (ch === ',' && !inString) ? ';' : ch;
+  }
+  return out;
+}
+
 /* ───────────── Menu nel foglio ───────────── */
 
 function onOpen() {
@@ -78,9 +107,11 @@ function setup() {
   guests.getRange(2, COL.LANG + 1, 1000, 1).setDataValidation(
     SpreadsheetApp.newDataValidation().requireValueInList(['it', 'en'], true).build());
 
+  var sep = formulaSeparator(ss);
+
   // Nomi doppi (anche con maiuscole diverse) in rosso, mentre si scrive o si riceve una risposta.
   var dupRule = SpreadsheetApp.newConditionalFormatRule()
-    .whenFormulaSatisfied('=AND($E2<>"",COUNTIF($E$2:$E,$E2)>1)')
+    .whenFormulaSatisfied(fx('=AND($E2<>"",COUNTIF($E$2:$E,$E2)>1)', sep))
     .setBackground('#f4c7c3')
     .setRanges([guests.getRange(2, COL.NAME + 1, 1000, 1)])
     .build();
@@ -109,7 +140,7 @@ function setup() {
   summary.clear();
   var G = SHEET_GUESTS + '!';
   var R = SHEET_RECIPIENTS + '!';
-  summary.getRange(1, 1, 16, 2).setFormulas([
+  var summaryRows = [
     ['Persone invitate', '=COUNTA(' + G + 'E2:E)'],
     ['Confermate', '=COUNTIF(' + G + 'G2:G,"Sì")'],
     ['Non vengono', '=COUNTIF(' + G + 'G2:G,"No")'],
@@ -126,7 +157,8 @@ function setup() {
     ['Da verificare (nome simile)', '=COUNTIF(' + R + 'C2:C,"Controlla*")'],
     ['Mancano', '=B12-B13-B14'],
     ['% che ha risposto', '=IF(B12=0,"",B13/B12)']
-  ]);
+  ].map(function (r) { return [r[0], fx(r[1], sep)]; });
+  summary.getRange(1, 1, 16, 2).setFormulas(summaryRows);
   summary.getRange(16, 2).setNumberFormat('0%');
   summary.getRange(1, 1, 16, 1).setFontWeight('bold');
   summary.setColumnWidth(1, 240);
@@ -195,6 +227,7 @@ function generateCodes() {
  * un nome che differisce per una sola lettera (refuso) va in "Controlla (simile a ...)".
  */
 function setupRecipients(ss) {
+  var sep = formulaSeparator(ss);
   var sheet = ss.getSheetByName(SHEET_RECIPIENTS) || ss.insertSheet(SHEET_RECIPIENTS);
   if (sheet.getLastRow() === 0) {
     sheet.getRange(1, 1, 1, 5).setValues([['Nome e cognome', 'Telefono', 'Ha risposto', 'Cosa ha risposto', 'Scrivigli su WhatsApp']])
@@ -211,7 +244,7 @@ function setupRecipients(ss) {
   var formulas = [];
   for (var r = 2; r <= 401; r++) {
     var digits = 'REGEXREPLACE(B' + r + '&"","[^0-9]","")';
-    formulas.push(['=IF(OR(B' + r + '="",C' + r + '="Sì"),"",HYPERLINK("https://wa.me/"&IF(LEFT(' + digits + ',1)="3","39","")&' + digits + ',"Scrivi"))']);
+    formulas.push([fx('=IF(OR(B' + r + '="",C' + r + '="Sì"),"",HYPERLINK("https://wa.me/"&IF(LEFT(' + digits + ',1)="3","39","")&' + digits + ',"Scrivi"))', sep)]);
   }
   sheet.getRange(2, 5, 400, 1).setFormulas(formulas);
 
@@ -220,7 +253,7 @@ function setupRecipients(ss) {
     ['=$C2="No"', '#f4c7c3'],
     ['=LEFT($C2,8)="Controll"', '#fff2cc']
   ].map(function (x) {
-    return SpreadsheetApp.newConditionalFormatRule().whenFormulaSatisfied(x[0]).setBackground(x[1])
+    return SpreadsheetApp.newConditionalFormatRule().whenFormulaSatisfied(fx(x[0], sep)).setBackground(x[1])
       .setRanges([sheet.getRange(2, 1, 400, 4)]).build();
   });
   sheet.setConditionalFormatRules(rules);

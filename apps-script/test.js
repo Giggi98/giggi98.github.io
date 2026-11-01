@@ -388,6 +388,26 @@ test('Destinatari: foglio vuoto o assente non rompe il salvataggio delle rispost
   assert.ok(env.alerts[env.alerts.length - 1].includes('è vuoto'), env.alerts[env.alerts.length - 1]);
 });
 
+test('formule: virgole nei fogli in inglese, punto e virgola nei fogli in italiano (niente #ERROR!)', () => {
+  const outside = (f, ch) => { let inS = false; for (const c of f) { if (c === '"') inS = !inS; else if (!inS && c === ch) return true; } return false; };
+  const en = makeEnv();
+  en.sandbox.setup();
+  const enF = en.sheets.Riepilogo.data.map((r) => r[1]).filter((f) => String(f).startsWith('=COUNTIF('));
+  assert.ok(enF.length > 0 && enF.every((f) => outside(f, ',') && !outside(f, ';')));
+  const it = makeEnv({ semicolonLocale: true });
+  it.sandbox.setup();
+  const rows = it.sheets.Riepilogo.data.filter((r) => r && r[1]);
+  assert.ok(rows.length >= 16);
+  assert.ok(rows.every((r) => !outside(String(r[1]), ',')), 'virgole rimaste');
+  assert.ok(rows.some((r) => outside(String(r[1]), ';')), 'nessun punto e virgola');
+  // le formule lette dal foglio non danno errore in nessuno dei due casi
+  const sh = it.sheets.Riepilogo;
+  for (let i = 1; i <= 16; i++) assert.notStrictEqual(sh.getRange(i, 2).getValue(), '#ERROR!', 'riga ' + i);
+  const wa = it.sheets.Destinatari.data[1][4];
+  assert.ok(outside(wa, ';') && !outside(wa, ','), wa);
+  assert.ok(!it.sheets.Riepilogo.data.some((r) => r && r[11]), 'cella di prova non ripulita');
+});
+
 let failed = 0;
 tests.forEach(([name, fn]) => {
   try { fn(); console.log('ok   ' + name); } catch (e) { failed++; console.log('FAIL ' + name + '\n     ' + (e.stack || e).split('\n').slice(0, 3).join('\n     ')); }

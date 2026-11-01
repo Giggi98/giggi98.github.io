@@ -642,6 +642,23 @@
 
   /* ───── Mappa del viaggio di nozze ───── */
 
+  // Aeroplanino stilizzato di profilo, con la foto dei due sposi nel finestrino.
+  function planeGlyph(svgEl, p) {
+    var g = svgEl('g', { class: 'trip__plane', transform: 'translate(' + p.x + ' ' + p.y + ') rotate(' + p.angle + ')' });
+    var photo = (SITE.heroPhotos && SITE.heroPhotos[0] && SITE.heroPhotos[0].src) || 'assets/hero/01.jpg';
+    var clip = svgEl('clipPath', { id: 'trip-plane-window' });
+    clip.append(svgEl('circle', { cx: 18, cy: -2, r: 46 }));
+    g.append(clip);
+    g.append(svgEl('path', { class: 'trip__plane-wing', d: 'M-30 14 L-96 70 L-62 70 L22 14 Z' }));
+    g.append(svgEl('path', { class: 'trip__plane-tail', d: 'M-128 -4 L-170 -66 L-136 -66 L-86 -4 Z' }));
+    g.append(svgEl('path', { class: 'trip__plane-body', d: 'M-150 4 C-150 -40 -110 -56 -60 -56 L70 -56 C130 -56 176 -26 176 6 C176 34 140 52 90 52 L-90 52 C-130 52 -150 34 -150 4 Z' }));
+    g.append(svgEl('circle', { class: 'trip__plane-ring', cx: 18, cy: -2, r: 53 }));
+    var img = svgEl('image', { href: photo, x: -64, y: -52, width: 144, height: 108, preserveAspectRatio: 'xMidYMid slice', 'clip-path': 'url(#trip-plane-window)' });
+    g.append(img);
+    g.append(svgEl('circle', { class: 'trip__plane-rim', cx: 18, cy: -2, r: 46 }));
+    return g;
+  }
+
   function setupTripMap() {
     var data = window.TRIP_MAP;
     var box = $('#trip-map');
@@ -674,12 +691,16 @@
     data.routes.forEach(function (r) {
       svg.append(svgEl('path', { class: 'trip__route trip__route--' + r.type, d: r.d }));
     });
+    if (data.arrival) {
+      svg.append(svgEl('path', { class: 'trip__route trip__route--flight', d: data.arrival.d }));
+      svg.append(planeGlyph(svgEl, data.arrival.plane));
+    }
     box.append(svg);
 
     // Scritte dei paesi, segnaposto (bottoni veri: si usano anche con la tastiera) e fumetto.
     [['japan', 'trip.jp'], ['thailand', 'trip.th']].forEach(function (pair) {
       box.append(h('p', { class: 'trip__label', 'data-i18n': pair[1],
-        style: 'left:2.5%;top:' + ((data.panels[pair[0]].y / H) * 100 + 2.5) + '%' }));
+        style: 'left:2.5%;top:' + (((data.panels[pair[0]].y + data.panels[pair[0]].height) / H) * 100 - 4.2) + '%' }));
     });
     var pop = h('div', { class: 'trip__pop', role: 'dialog', hidden: true });
     var pins = {};
