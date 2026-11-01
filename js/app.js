@@ -642,20 +642,34 @@
 
   /* ───── Mappa del viaggio di nozze ───── */
 
-  // Aeroplanino stilizzato di profilo, con la foto dei due sposi nel finestrino.
+  // Aeroplano di linea stilizzato, di profilo, con la foto dei due sposi in un grande oblò.
   function planeGlyph(svgEl, p) {
     var g = svgEl('g', { class: 'trip__plane', transform: 'translate(' + p.x + ' ' + p.y + ') rotate(' + p.angle + ')' });
     var photo = (SITE.heroPhotos && SITE.heroPhotos[0] && SITE.heroPhotos[0].src) || 'assets/hero/01.jpg';
+    var cx = 30, cy = -2, r = 36;
     var clip = svgEl('clipPath', { id: 'trip-plane-window' });
-    clip.append(svgEl('circle', { cx: 18, cy: -2, r: 46 }));
+    clip.append(svgEl('circle', { cx: cx, cy: cy, r: r }));
     g.append(clip);
-    g.append(svgEl('path', { class: 'trip__plane-wing', d: 'M-30 14 L-96 70 L-62 70 L22 14 Z' }));
-    g.append(svgEl('path', { class: 'trip__plane-tail', d: 'M-128 -4 L-170 -66 L-136 -66 L-86 -4 Z' }));
-    g.append(svgEl('path', { class: 'trip__plane-body', d: 'M-150 4 C-150 -40 -110 -56 -60 -56 L70 -56 C130 -56 176 -26 176 6 C176 34 140 52 90 52 L-90 52 C-130 52 -150 34 -150 4 Z' }));
-    g.append(svgEl('circle', { class: 'trip__plane-ring', cx: 18, cy: -2, r: 53 }));
-    var img = svgEl('image', { href: photo, x: -64, y: -52, width: 144, height: 108, preserveAspectRatio: 'xMidYMid slice', 'clip-path': 'url(#trip-plane-window)' });
-    g.append(img);
-    g.append(svgEl('circle', { class: 'trip__plane-rim', cx: 18, cy: -2, r: 46 }));
+    // deriva, piano di coda, ala lontana (dietro la fusoliera)
+    g.append(svgEl('path', { class: 'trip__plane-fin', d: 'M-182 -40 L-214 -120 L-184 -120 L-128 -42 Z' }));
+    g.append(svgEl('path', { class: 'trip__plane-fin', d: 'M-150 -14 L-212 -40 L-192 -44 L-118 -18 Z' }));
+    g.append(svgEl('path', { class: 'trip__plane-fin', d: 'M-6 -38 L-52 -74 L-30 -76 L30 -40 Z' }));
+    // fusoliera con il muso arrotondato a destra e la coda che sale a sinistra
+    g.append(svgEl('path', { class: 'trip__plane-body', d: 'M-190 -40 L110 -44 C158 -44 200 -22 200 4 C200 26 166 42 124 42 L-120 42 C-160 42 -186 20 -190 -40 Z' }));
+    g.append(svgEl('path', { class: 'trip__plane-stripe', d: 'M-150 18 L150 18' }));
+    // finestrini piccoli e vetro della cabina di pilotaggio
+    for (var x = -150; x <= 150; x += 24) {
+      if (Math.abs(x - cx) < r + 12) continue;
+      g.append(svgEl('circle', { class: 'trip__plane-win', cx: x, cy: -14, r: 6 }));
+    }
+    g.append(svgEl('path', { class: 'trip__plane-win', d: 'M162 -26 C176 -22 186 -14 190 -6 L166 -6 Z' }));
+    // oblò con la foto
+    g.append(svgEl('circle', { class: 'trip__plane-ring', cx: cx, cy: cy, r: r + 7 }));
+    g.append(svgEl('image', { href: photo, x: cx - 66, y: cy - 44, width: 120, height: 90, preserveAspectRatio: 'xMidYMid slice', 'clip-path': 'url(#trip-plane-window)' }));
+    g.append(svgEl('circle', { class: 'trip__plane-rim', cx: cx, cy: cy, r: r }));
+    // ala vicina e motore (davanti alla fusoliera, sotto l'oblò)
+    g.append(svgEl('path', { class: 'trip__plane-wing', d: 'M-30 22 L-130 112 L-92 114 L28 24 Z' }));
+    g.append(svgEl('rect', { class: 'trip__plane-engine', x: -98, y: 70, width: 52, height: 22, rx: 11 }));
     return g;
   }
 

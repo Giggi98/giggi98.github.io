@@ -30,6 +30,9 @@ class Range {
   setNumberFormat() { return this; }
   setFontWeight() { return this; }
   setBackground() { return this; }
+  setBackgrounds(b) { this.sheet.backgrounds = this.sheet.backgrounds || {}; b.forEach((row, i) => row.forEach((v, j) => { this.sheet.backgrounds[(this.r + i) + ':' + (this.c + j)] = v; })); return this; }
+  setRichTextValues(v) { v.forEach((row, i) => row.forEach((x, j) => this.sheet.put(this.r + i, this.c + j, x.link ? { text: x.text, link: x.link } : x.text))); return this; }
+  clearContent() { return this.clear(); }
   setDataValidation() { return this; }
 }
 class Sheet {
@@ -54,6 +57,7 @@ class Sheet {
   getRange(r, c, nr = 1, nc = 1) { return new Range(this, r, c, nr, nc); }
   setFrozenRows() {}
   setConditionalFormatRules(r) { this.rules = r; }
+  getBackground(r, c) { return (this.backgrounds || {})[r + ':' + c] || null; }
   setColumnWidth() {}
   clear() { this.data = []; }
 }
@@ -72,6 +76,7 @@ function makeEnv(opts = {}) {
       flush() {},
       getActive: () => ss,
       getUi: () => ({ createMenu: () => ({ addItem() { return this; }, addToUi() {} }), alert: (m) => alerts.push(m) }),
+      newRichTextValue: () => { const b = { text: '', link: null, setText(t) { this.text = t; return this; }, setLinkUrl(u) { this.link = u; return this; }, build() { return { text: this.text, link: this.link }; } }; return b; },
       newConditionalFormatRule: () => { const b = { whenFormulaSatisfied(f) { this.formula = f; return this; }, setBackground() { return this; }, setRanges() { return this; }, build() { return { formula: this.formula }; } }; return b; },
       newDataValidation: () => ({ requireValueInList() { return this; }, build: () => ({}) })
     },

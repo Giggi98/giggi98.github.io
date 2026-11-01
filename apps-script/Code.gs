@@ -6,7 +6,7 @@
  *   Invitati   una riga per persona (la compilate voi, tranne le colonne grigie)
  *   Messaggi   un messaggio per invito (scritto dal sito)
  *   Config     scadenza, IBAN, email di notifica
- *   Riepilogo  conteggi automatici
+ *   Riepilogo  conteggi (calcolati dallo script a ogni risposta, nessuna formula)
  *   Controlli  duplicati ed errori trovati in Invitati (si crea dal menu Matrimonio)
  *   Destinatari  chi ha ricevuto il messaggio (la compilate voi) e se ha già risposto; percentuale e chi manca
  *
@@ -46,35 +46,6 @@ var CONFIG_DEFAULTS = [
   ['causale', '', 'Causale suggerita per il bonifico (facoltativa)']
 ];
 
-/* ───────────── Formule: separatore degli argomenti secondo la lingua del foglio ───────────── */
-
-/**
- * Nei fogli con impostazione internazionale Italia (e in molte altre) le formule scritte dallo script vogliono ";" tra gli argomenti,
- * mentre in quelli in inglese vogliono ",". Invece di indovinare dalla lingua, si prova: si scrive =SUM(1,2) in una cella
- * di prova e si guarda se dà errore.
- */
-function formulaSeparator(ss) {
-  var sheet = ss.getSheetByName(SHEET_SUMMARY) || ss.insertSheet(SHEET_SUMMARY);
-  var cell = sheet.getRange(1, 12);
-  cell.setFormula('=SUM(1,2)');
-  SpreadsheetApp.flush();
-  var failed = String(cell.getValue()).charAt(0) === '#';
-  cell.clear();
-  return failed ? ';' : ',';
-}
-
-// Converte le virgole tra gli argomenti in ";" (fuori dalle virgolette) quando serve.
-function fx(formula, sep) {
-  if (sep === ',') return formula;
-  var out = '', inString = false;
-  for (var i = 0; i < formula.length; i++) {
-    var ch = formula.charAt(i);
-    if (ch === '"') inString = !inString;
-    out += (ch === ',' && !inString) ? ';' : ch;
-  }
-  return out;
-}
-
 /* ───────────── Menu nel foglio ───────────── */
 
 function onOpen() {
@@ -83,7 +54,7 @@ function onOpen() {
     .addItem('1. Prepara i fogli', 'setup')
     .addItem('2. Genera codici e link', 'generateCodes')
     .addItem('3. Controlla duplicati ed errori', 'checkGuests')
-    .addItem('4. Aggiorna chi ha risposto (Destinatari)', 'refreshRecipients')
+    .addItem('4. Aggiorna riepilogo e chi ha risposto', 'refreshRecipients')
     .addToUi();
 }
 
@@ -107,15 +78,9 @@ function setup() {
   guests.getRange(2, COL.LANG + 1, 1000, 1).setDataValidation(
     SpreadsheetApp.newDataValidation().requireValueInList(['it', 'en'], true).build());
 
-  var sep = formulaSeparator(ss);
-
-  // Nomi doppi (anche con maiuscole diverse) in rosso, mentre si scrive o si riceve una risposta.
-  var dupRule = SpreadsheetApp.newConditionalFormatRule()
-    .whenFormulaSatisfied(fx('=AND($E2<>"",COUNTIF($E$2:$E,$E2)>1)', sep))
-    .setBackground('#f4c7c3')
-    .setRanges([guests.getRange(2, COL.NAME + 1, 1000, 1)])
-    .build();
-  guests.setConditionalFormatRules([dupRule]);
+  // Le regole a formula della versione precedente davano errore nei fogli in italiano: si tolgono.
+  // I nomi doppi ora li colora lo script (colorDuplicates).
+  guests.setConditionalFormatRules([]);
 
   var messages = ss.getSheetByName(SHEET_MESSAGES) || ss.insertSheet(SHEET_MESSAGES);
   if (messages.getLastRow() === 0) {
@@ -136,34 +101,9 @@ function setup() {
 
   setupRecipients(ss);
 
-  var summary = ss.getSheetByName(SHEET_SUMMARY) || ss.insertSheet(SHEET_SUMMARY);
-  summary.clear();
-  var G = SHEET_GUESTS + '!';
-  var R = SHEET_RECIPIENTS + '!';
-  var summaryRows = [
-    ['Persone invitate', '=COUNTA(' + G + 'E2:E)'],
-    ['Confermate', '=COUNTIF(' + G + 'G2:G,"Sì")'],
-    ['Non vengono', '=COUNTIF(' + G + 'G2:G,"No")'],
-    ['Senza risposta', '=B1-B2-B3'],
-    ['Menù bimbi (confermati)', '=COUNTIFS(' + G + 'F2:F,"Sì",' + G + 'G2:G,"Sì")'],
-    ['Vegetariani (confermati)', '=COUNTIFS(' + G + 'G2:G,"Sì",' + G + 'H2:H,"Vegetariano")'],
-    ['Vegani (confermati)', '=COUNTIFS(' + G + 'G2:G,"Sì",' + G + 'H2:H,"Vegano")'],
-    ['Con allergie o intolleranze', '=COUNTIFS(' + G + 'G2:G,"Sì",' + G + 'I2:I,"<>")'],
-    ['Bimbi con seggiolone proprio', '=COUNTIFS(' + G + 'F2:F,"Sì",' + G + 'G2:G,"Sì",' + G + 'L2:L,"Sì")'],
-    ['Bimbi che ne hanno bisogno (da fornire)', '=COUNTIFS(' + G + 'F2:F,"Sì",' + G + 'G2:G,"Sì",' + G + 'L2:L,"Serve")'],
-    ['Righe con nome doppio (controlla)', '=SUMPRODUCT((' + G + 'E2:E<>"")*(COUNTIF(' + G + 'E2:E,' + G + 'E2:E)>1))'],
-    ['Destinatari del messaggio', '=COUNTA(' + R + 'A2:A)'],
-    ['Hanno già risposto', '=COUNTIF(' + R + 'C2:C,"Sì")'],
-    ['Da verificare (nome simile)', '=COUNTIF(' + R + 'C2:C,"Controlla*")'],
-    ['Mancano', '=B12-B13-B14'],
-    ['% che ha risposto', '=IF(B12=0,"",B13/B12)']
-  ].map(function (r) { return [r[0], fx(r[1], sep)]; });
-  summary.getRange(1, 1, 16, 2).setFormulas(summaryRows);
-  summary.getRange(16, 2).setNumberFormat('0%');
-  summary.getRange(1, 1, 16, 1).setFontWeight('bold');
-  summary.setColumnWidth(1, 240);
+  refreshAll(ss);
 
-  SpreadsheetApp.getUi().alert('Fogli pronti. Compila Config e Invitati, poi scegli "Genera codici e link" dal menu Matrimonio.');
+  SpreadsheetApp.getUi().alert('Fogli pronti. Compila Config e scrivi in Destinatari chi ha ricevuto il messaggio. Riepilogo, colori e "chi ha risposto" si aggiornano a ogni risposta.');
 }
 
 /**
@@ -227,7 +167,6 @@ function generateCodes() {
  * un nome che differisce per una sola lettera (refuso) va in "Controlla (simile a ...)".
  */
 function setupRecipients(ss) {
-  var sep = formulaSeparator(ss);
   var sheet = ss.getSheetByName(SHEET_RECIPIENTS) || ss.insertSheet(SHEET_RECIPIENTS);
   if (sheet.getLastRow() === 0) {
     sheet.getRange(1, 1, 1, 5).setValues([['Nome e cognome', 'Telefono', 'Ha risposto', 'Cosa ha risposto', 'Scrivigli su WhatsApp']])
@@ -239,24 +178,11 @@ function setupRecipients(ss) {
     sheet.setColumnWidth(4, 160);
     sheet.setColumnWidth(5, 170);
   }
-  // Telefono come testo (così lo zero o il + iniziale non spariscono) e link WhatsApp per chi non ha ancora risposto.
+  // Telefono come testo, così lo zero o il + iniziale non spariscono.
   sheet.getRange(2, 2, 400, 1).setNumberFormat('@');
-  var formulas = [];
-  for (var r = 2; r <= 401; r++) {
-    var digits = 'REGEXREPLACE(B' + r + '&"","[^0-9]","")';
-    formulas.push([fx('=IF(OR(B' + r + '="",C' + r + '="Sì"),"",HYPERLINK("https://wa.me/"&IF(LEFT(' + digits + ',1)="3","39","")&' + digits + ',"Scrivi"))', sep)]);
-  }
-  sheet.getRange(2, 5, 400, 1).setFormulas(formulas);
-
-  var rules = [
-    ['=$C2="Sì"', '#d9ead3'],
-    ['=$C2="No"', '#f4c7c3'],
-    ['=LEFT($C2,8)="Controll"', '#fff2cc']
-  ].map(function (x) {
-    return SpreadsheetApp.newConditionalFormatRule().whenFormulaSatisfied(fx(x[0], sep)).setBackground(x[1])
-      .setRanges([sheet.getRange(2, 1, 400, 4)]).build();
-  });
-  sheet.setConditionalFormatRules(rules);
+  // Formule e regole della versione precedente (davano errore nei fogli in italiano): via.
+  sheet.setConditionalFormatRules([]);
+  sheet.getRange(2, 5, 400, 1).clearContent();
 }
 
 function updateRecipients(ss) {
@@ -279,7 +205,8 @@ function updateRecipients(ss) {
   });
 
   var last = sheet.getLastRow();
-  var names = sheet.getRange(2, 1, last - 1, 1).getValues();
+  var data = sheet.getRange(2, 1, last - 1, 2).getValues();
+  var names = data;
   var out = [];
   var answered = 0, check = 0, total = 0;
   names.forEach(function (row) {
@@ -302,24 +229,103 @@ function updateRecipients(ss) {
   var range = sheet.getRange(2, 3, out.length, 2);
   range.setNumberFormat('@');
   range.setValues(out);
+
+  // Colori della riga e link "Scrivi" su WhatsApp per chi non ha ancora risposto (niente formule: valgono in ogni lingua).
+  var colors = out.map(function (o) {
+    var c = o[0] === 'Sì' ? '#d9ead3' : (o[0] === 'No' ? '#f4c7c3' : (o[0] ? '#fff2cc' : null));
+    return [c, c, c, c];
+  });
+  sheet.getRange(2, 1, out.length, 4).setBackgrounds(colors);
+  var links = data.map(function (row, i) {
+    var digits = String(row[1] == null ? '' : row[1]).replace(/[^0-9]/g, '');
+    if (!digits || out[i][0] === 'Sì') return [SpreadsheetApp.newRichTextValue().setText('').build()];
+    if (digits.charAt(0) === '3') digits = '39' + digits;
+    return [SpreadsheetApp.newRichTextValue().setText('Scrivi').setLinkUrl('https://wa.me/' + digits).build()];
+  });
+  sheet.getRange(2, 5, out.length, 1).setRichTextValues(links);
   return { total: total, answered: answered, check: check };
+}
+
+// Nomi doppi in rosso in "Invitati" (maiuscole, accenti e spazi non contano).
+function colorDuplicates(ss) {
+  var sheet = ss.getSheetByName(SHEET_GUESTS);
+  var rows = readGuests(sheet);
+  if (!rows.length) return 0;
+  var count = {};
+  var keys = rows.map(function (r) {
+    var k = normalizeName(clean(r.values[COL.NAME], 200));
+    if (k) count[k] = (count[k] || 0) + 1;
+    return k;
+  });
+  var dup = 0;
+  var colors = keys.map(function (k) {
+    if (k && count[k] > 1) { dup++; return ['#f4c7c3']; }
+    return [null];
+  });
+  sheet.getRange(2, COL.NAME + 1, rows.length, 1).setBackgrounds(colors);
+  return dup;
+}
+
+// Riepilogo: numeri calcolati dallo script e scritti come valori (le formule davano errore nei fogli in italiano).
+function updateSummary(ss, rec, dup) {
+  var rows = readGuests(ss.getSheetByName(SHEET_GUESTS)).filter(function (r) { return clean(r.values[COL.NAME], 200); });
+  var yes = function (r) { var v = String(r.values[COL.RESP]).trim().toLowerCase(); return v === 'sì' || v === 'si'; };
+  var no = function (r) { return String(r.values[COL.RESP]).trim().toLowerCase() === 'no'; };
+  var coming = rows.filter(yes);
+  var kids = coming.filter(function (r) { return isYes(r.values[COL.CHILD]); });
+  var diet = function (label) { return coming.filter(function (r) { return String(r.values[COL.DIET]).trim() === label; }).length; };
+  var chair = function (v) { return kids.filter(function (r) { return highchairOf(r.values[COL.HIGHCHAIR]) === v; }).length; };
+  var missing = rec.total - rec.answered - rec.check;
+  var table = [
+    ['Persone invitate', rows.length],
+    ['Confermate', coming.length],
+    ['Non vengono', rows.filter(no).length],
+    ['Senza risposta', rows.length - coming.length - rows.filter(no).length],
+    ['Menù bimbi (confermati)', kids.length],
+    ['Vegetariani (confermati)', diet('Vegetariano')],
+    ['Vegani (confermati)', diet('Vegano')],
+    ['Con allergie o intolleranze', coming.filter(function (r) { return clean(r.values[COL.ALLERGY], 300); }).length],
+    ['Bimbi con seggiolone proprio', chair('yes')],
+    ['Bimbi che ne hanno bisogno (da fornire)', chair('need')],
+    ['Righe con nome doppio (controlla)', dup],
+    ['Destinatari del messaggio', rec.total],
+    ['Hanno già risposto', rec.answered],
+    ['Da verificare (nome simile)', rec.check],
+    ['Mancano', missing],
+    ['% che ha risposto', rec.total ? rec.answered / rec.total : '']
+  ];
+  var sheet = ss.getSheetByName(SHEET_SUMMARY) || ss.insertSheet(SHEET_SUMMARY);
+  sheet.clear();
+  sheet.getRange(1, 1, table.length, 2).setValues(table);
+  sheet.getRange(table.length, 2).setNumberFormat('0%');
+  sheet.getRange(1, 1, table.length, 1).setFontWeight('bold');
+  sheet.setColumnWidth(1, 260);
+  return table;
+}
+
+function refreshAll(ss) {
+  var rec = updateRecipients(ss);
+  var dup = colorDuplicates(ss);
+  updateSummary(ss, rec, dup);
+  return rec;
 }
 
 function refreshRecipients() {
   var ss = SpreadsheetApp.getActive();
   if (!ss.getSheetByName(SHEET_RECIPIENTS)) setupRecipients(ss);
-  var r = updateRecipients(ss);
+  var r = refreshAll(ss);
   var pct = r.total ? Math.round(r.answered / r.total * 100) : 0;
   SpreadsheetApp.getUi().alert(r.total
     ? 'Hanno risposto ' + r.answered + ' su ' + r.total + ' (' + pct + '%). Mancano ' + (r.total - r.answered - r.check) + '; da verificare: ' + r.check + '. Guarda il foglio "Destinatari".'
     : 'Il foglio "Destinatari" è vuoto: scrivi in colonna A il nome e cognome di chi ha ricevuto il messaggio (e in B il telefono, se vuoi il link WhatsApp).');
 }
 
-// Quando incollate o cambiate nomi in "Destinatari" l'elenco si aggiorna da solo.
+// Quando cambiate nomi in "Destinatari" o righe in "Invitati" riepilogo, colori e "chi ha risposto" si aggiornano da soli.
 function onEdit(e) {
   try {
     var sh = e.range.getSheet();
-    if (sh.getName() === SHEET_RECIPIENTS && e.range.getColumn() <= 2) updateRecipients(e.source);
+    var name = sh.getName();
+    if ((name === SHEET_RECIPIENTS && e.range.getColumn() <= 2) || name === SHEET_GUESTS) refreshAll(e.source);
   } catch (err) { /* nessun problema: si può sempre usare il menu */ }
 }
 
@@ -687,7 +693,7 @@ function saveRsvp(body) {
     writeMessage(ss, code, invite, message, now);
 
     notify(cfg, invite, entries, message, before);
-    try { updateRecipients(ss); } catch (err) { /* l'elenco dei destinatari è un di più */ }
+    try { refreshAll(ss); } catch (err) { /* riepilogo e colori sono un di più: la risposta è già salvata */ }
     return { ok: true, code: code, answeredAt: now.toISOString(), invite: getInvite(code).invite };
   } finally {
     lock.releaseLock();

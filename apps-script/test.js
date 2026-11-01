@@ -33,7 +33,7 @@ test('setup crea i quattro fogli e il riepilogo', () => {
   const env = makeEnv();
   env.sandbox.setup();
   ['Invitati', 'Messaggi', 'Config', 'Riepilogo'].forEach((n) => assert.ok(env.sheets[n], n));
-  assert.ok(String(env.sheets.Riepilogo.data[1][1]).startsWith('=COUNTIF('));
+  assert.deepStrictEqual(env.sheets.Riepilogo.data[0], ['Persone invitate', 3]);   // le tre righe d'esempio, nessuna formula
 });
 
 test('generateCodes: stesso codice per invito, ID unici, link', () => {
@@ -346,8 +346,7 @@ test('setup: intestazione Seggiolone e righe di riepilogo', () => {
   assert.strictEqual(env.sheets.Invitati.data[0][11], 'Seggiolone');
   const labels = env.sheets.Riepilogo.data.map((r) => r[0]);
   assert.ok(labels.includes('Bimbi che ne hanno bisogno (da fornire)'));
-  assert.ok(String(env.sheets.Riepilogo.data[labels.indexOf('Bimbi con seggiolone proprio')][1]).includes('L2:L,"Sì"'));
-  assert.ok(String(env.sheets.Riepilogo.data[labels.indexOf('Bimbi che ne hanno bisogno (da fornire)')][1]).includes('L2:L,"Serve"'));
+  assert.strictEqual(env.sheets.Riepilogo.data[labels.indexOf('Bimbi con seggiolone proprio')][1], 0);
   ['Destinatari del messaggio', 'Hanno già risposto', 'Mancano', '% che ha risposto'].forEach((l) => assert.ok(labels.includes(l), l));
   assert.ok(env.sheets.Destinatari, 'foglio Destinatari');
 });
@@ -388,24 +387,47 @@ test('Destinatari: foglio vuoto o assente non rompe il salvataggio delle rispost
   assert.ok(env.alerts[env.alerts.length - 1].includes('è vuoto'), env.alerts[env.alerts.length - 1]);
 });
 
-test('formule: virgole nei fogli in inglese, punto e virgola nei fogli in italiano (niente #ERROR!)', () => {
-  const outside = (f, ch) => { let inS = false; for (const c of f) { if (c === '"') inS = !inS; else if (!inS && c === ch) return true; } return false; };
-  const en = makeEnv();
-  en.sandbox.setup();
-  const enF = en.sheets.Riepilogo.data.map((r) => r[1]).filter((f) => String(f).startsWith('=COUNTIF('));
-  assert.ok(enF.length > 0 && enF.every((f) => outside(f, ',') && !outside(f, ';')));
-  const it = makeEnv({ semicolonLocale: true });
-  it.sandbox.setup();
-  const rows = it.sheets.Riepilogo.data.filter((r) => r && r[1]);
-  assert.ok(rows.length >= 16);
-  assert.ok(rows.every((r) => !outside(String(r[1]), ',')), 'virgole rimaste');
-  assert.ok(rows.some((r) => outside(String(r[1]), ';')), 'nessun punto e virgola');
-  // le formule lette dal foglio non danno errore in nessuno dei due casi
-  const sh = it.sheets.Riepilogo;
-  for (let i = 1; i <= 16; i++) assert.notStrictEqual(sh.getRange(i, 2).getValue(), '#ERROR!', 'riga ' + i);
-  const wa = it.sheets.Destinatari.data[1][4];
-  assert.ok(outside(wa, ';') && !outside(wa, ','), wa);
-  assert.ok(!it.sheets.Riepilogo.data.some((r) => r && r[11]), 'cella di prova non ripulita');
+test('riepilogo: valori calcolati, nessuna formula, aggiornato a ogni risposta', () => {
+  const env = seeded();
+  const d = env.sheets.Destinatari;
+  ['Anna Verdi', 'Teo Verdi', 'Zia Pina', 'Mario Rossi'].forEach((n, i) => d.put(2 + i, 1, n));
+  d.put(4, 2, '333 111 2222');
+  post(env, newRsvp({ people: [
+    { name: 'Anna Verdi', attending: 'yes', diet: 'vegan', allergies: 'noci' },
+    { name: 'Teo Verdi', child: true, attending: 'yes', highchair: 'need' },
+    { name: 'Ugo Verdi', attending: 'no' }
+  ] }));
+  const r = Object.fromEntries(env.sheets.Riepilogo.data.filter((x) => x && x[0]).map((x) => [x[0], x[1]]));
+  assert.strictEqual(r['Persone invitate'], 7);           // 4 di prova + 3
+  assert.strictEqual(r['Confermate'], 2);
+  assert.strictEqual(r['Non vengono'], 1);
+  assert.strictEqual(r['Senza risposta'], 4);
+  assert.strictEqual(r['Menù bimbi (confermati)'], 1);
+  assert.strictEqual(r['Vegani (confermati)'], 1);
+  assert.strictEqual(r['Con allergie o intolleranze'], 1);
+  assert.strictEqual(r['Bimbi che ne hanno bisogno (da fornire)'], 1);
+  assert.strictEqual(r['Destinatari del messaggio'], 4);
+  assert.strictEqual(r['Hanno già risposto'], 2);
+  assert.strictEqual(r['Mancano'], 2);
+  assert.strictEqual(r['% che ha risposto'], 0.5);
+  const all = [].concat(...['Riepilogo', 'Destinatari', 'Invitati'].map((n) => env.sheets[n].data.flat()));
+  assert.ok(!all.some((v) => typeof v === 'string' && v.charAt(0) === '='), 'nessuna formula nei fogli');
+  // colori e link
+  assert.strictEqual(d.getBackground(2, 1), '#d9ead3');
+  assert.strictEqual(d.getBackground(4, 1), '#f4c7c3');
+  assert.deepStrictEqual(d.data[3][4], { text: 'Scrivi', link: 'https://wa.me/393331112222' });
+  assert.strictEqual(d.data[1][4], '');   // ha risposto: niente link
+});
+
+test('nomi doppi colorati dallo script, anche con maiuscole e spazi diversi', () => {
+  const env = seeded();
+  post(env, newRsvp({ people: [{ name: 'mario  ROSSI', attending: 'yes' }] }));
+  const g = env.sheets.Invitati;
+  assert.strictEqual(g.getBackground(2, 5), '#f4c7c3');   // Mario Rossi (riga di prova)
+  assert.strictEqual(g.getBackground(6, 5), '#f4c7c3');   // mario ROSSI
+  assert.strictEqual(g.getBackground(3, 5), null);        // Giulia Rossi
+  const r = Object.fromEntries(env.sheets.Riepilogo.data.filter((x) => x && x[0]).map((x) => [x[0], x[1]]));
+  assert.strictEqual(r['Righe con nome doppio (controlla)'], 2);
 });
 
 let failed = 0;
