@@ -51,6 +51,17 @@ Se invece crei una "Nuova distribuzione" l'URL cambia e va aggiornato in `js/con
 Puoi ordinare e filtrare `Invitati` come vuoi: lo script riconosce le persone dal loro `ID`, non dalla posizione.
 Non cambiare il nome dei fogli né l'ordine delle colonne.
 
+## Chi ha risposto e chi manca (foglio `Destinatari`)
+
+Il foglio `Invitati` contiene solo chi ha risposto, quindi per sapere chi manca serve l'elenco di chi ha ricevuto il messaggio:
+1. Rilancia "1. Prepara i fogli": crea il foglio `Destinatari` (se non c'è già) e le righe in `Riepilogo`.
+2. In `Destinatari` scrivi in colonna A il **nome e cognome di ogni persona** a cui hai mandato il messaggio (una per riga, anche i familiari: chi risponde scrive i nomi di tutti) e, se vuoi, in colonna B il telefono.
+3. Le colonne C e D si compilano da sole (a ogni risposta e quando cambi i nomi): "Sì" se quel nome compare tra le risposte, con scritto se viene o no; "No" se non ha risposto; "Controlla (simile a …)" se c'è un nome quasi uguale (un refuso). Maiuscole, accenti e ordine nome/cognome non contano.
+4. In colonna E, per chi non ha risposto e ha un telefono, c'è il link "Scrivi" che apre WhatsApp con quel numero. Per vedere solo chi manca usa Dati > Crea un filtro e filtra la colonna C su "No".
+5. `Riepilogo` mostra destinatari, quanti hanno risposto, da verificare, mancanti e la percentuale. Il menu "4. Aggiorna chi ha risposto" ricalcola tutto e dice il conteggio.
+
+Limiti: un nome scritto in modo molto diverso ("Gigi" invece di "Luigi") non viene riconosciuto e compare tra chi manca; in quel caso correggi il nome in uno dei due fogli.
+
 ## Controlli su duplicati ed errori
 
 - In `Invitati` i **nomi doppi** si colorano di rosso da soli (maiuscole e minuscole non contano).

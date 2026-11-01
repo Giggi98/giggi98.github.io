@@ -311,26 +311,30 @@ test('checkGuests: nomi doppi, ordine diverso, refusi, bambini soli, righe senza
   assert.ok(dup[1].includes('la più recente è la riga'), dup[1]);
 });
 
-test('seggiolone: salvato per i bimbi che vengono, riletto, in riepilogo e nella mail', () => {
+test('seggiolone: tre risposte, salvate per i bimbi che vengono, riletto, in riepilogo e nella mail', () => {
   const env = seeded();
   const res = post(env, newRsvp({ people: [
     { name: 'Anna Verdi', attending: 'yes' },
-    { name: 'Teo Verdi', child: true, attending: 'yes', highchair: 'no' },
+    { name: 'Teo Verdi', child: true, attending: 'yes', highchair: 'need' },
     { name: 'Ida Verdi', child: true, attending: 'yes', highchair: 'yes' },
-    { name: 'Gino Verdi', child: true, attending: 'no', highchair: 'yes' },       // non viene: ignorato
+    { name: 'Gino Verdi', child: true, attending: 'yes', highchair: 'ok' },
+    { name: 'Pio Verdi', child: true, attending: 'no', highchair: 'yes' },       // non viene: ignorato
     { name: 'Lia Verdi', attending: 'yes', highchair: 'yes' }                    // non è un bimbo: ignorato
   ] }));
   assert.strictEqual(res.ok, true);
-  assert.deepStrictEqual(res.invite.people.map((p) => p.highchair), [null, 'no', 'yes', null, null]);
+  assert.deepStrictEqual(res.invite.people.map((p) => p.highchair), [null, 'need', 'yes', 'ok', null, null]);
   const rows = env.sheets.Invitati.data.slice(5);
-  assert.deepStrictEqual(rows.map((r) => r[11]), ['', 'No', 'Sì', '', '']);
+  assert.deepStrictEqual(rows.map((r) => r[11]), ['', 'Serve', 'Sì', 'Non serve', '', '']);
   assert.ok(env.mails[0].body.includes('Teo Verdi: ci sarà (bambino, serve un seggiolone)'), env.mails[0].body);
   assert.ok(env.mails[0].body.includes('Ida Verdi: ci sarà (bambino, porta il seggiolone)'));
-  // senza il campo (vecchio sito in cache) il bimbo si salva comunque, con la cella vuota
-  const old = post(env, newRsvp({ people: [{ name: 'Pia Neri', child: true, attending: 'yes' }] }));
-  assert.strictEqual(old.ok, true);
-  assert.strictEqual(old.invite.people[0].highchair, null);
-  // modifica: da "No" a "Sì"
+  // sito vecchio in cache: "no" voleva dire "mi serve"
+  const old = post(env, newRsvp({ people: [{ name: 'Pia Neri', child: true, attending: 'yes', highchair: 'no' }] }));
+  assert.strictEqual(old.invite.people[0].highchair, 'need');
+  // senza il campo il bimbo si salva comunque, con la cella vuota
+  const none = post(env, newRsvp({ people: [{ name: 'Ugo Neri', child: true, attending: 'yes' }] }));
+  assert.strictEqual(none.ok, true);
+  assert.strictEqual(none.invite.people[0].highchair, null);
+  // modifica: da "Serve" a "Sì"
   const people = res.invite.people.map((p) => ({ id: p.id, name: p.name, child: p.child, attending: p.attending, highchair: p.name === 'Teo Verdi' ? 'yes' : p.highchair }));
   assert.strictEqual(post(env, newRsvp({ code: res.code, people })).ok, true);
   assert.strictEqual(env.sheets.Invitati.data[6][11], 'Sì');
@@ -341,8 +345,47 @@ test('setup: intestazione Seggiolone e righe di riepilogo', () => {
   env.sandbox.setup();
   assert.strictEqual(env.sheets.Invitati.data[0][11], 'Seggiolone');
   const labels = env.sheets.Riepilogo.data.map((r) => r[0]);
-  assert.ok(labels.includes('Bimbi senza seggiolone (da fornire)'));
+  assert.ok(labels.includes('Bimbi che ne hanno bisogno (da fornire)'));
   assert.ok(String(env.sheets.Riepilogo.data[labels.indexOf('Bimbi con seggiolone proprio')][1]).includes('L2:L,"Sì"'));
+  assert.ok(String(env.sheets.Riepilogo.data[labels.indexOf('Bimbi che ne hanno bisogno (da fornire)')][1]).includes('L2:L,"Serve"'));
+  ['Destinatari del messaggio', 'Hanno già risposto', 'Mancano', '% che ha risposto'].forEach((l) => assert.ok(labels.includes(l), l));
+  assert.ok(env.sheets.Destinatari, 'foglio Destinatari');
+});
+
+test('Destinatari: chi ha risposto, chi manca, nomi simili, aggiornamento automatico a ogni risposta', () => {
+  const env = seeded();
+  const d = env.sheets.Destinatari;
+  [['Mario Bianchi'], ['Rossi Giulia'], ['Giovanni Esposito'], ['Luca Verdi'], ['Anna Neri'], ['']].forEach((r, i) => d.put(2 + i, 1, r[0]));
+  d.put(6, 2, '333 123 4567');
+  // risposte: Mario (con i suoi accompagnatori), "giulia rossi" (ordine e maiuscole diverse), "Giovanni Espozito" (refuso)
+  post(env, newRsvp({ people: [
+    { name: 'Mario Bianchi', attending: 'yes' },
+    { name: 'giulia  ROSSI', attending: 'no' },
+    { name: 'Giovanni Espozito', attending: 'yes' }
+  ] }));
+  const rows = d.data.slice(1, 6);
+  assert.strictEqual(rows[0][2], 'Sì');
+  assert.strictEqual(rows[0][3], 'Viene');
+  assert.strictEqual(rows[1][2], 'Sì');
+  assert.strictEqual(rows[1][3], 'Non viene');
+  assert.ok(rows[2][2].startsWith('Controlla (simile a Giovanni Espozito'), rows[2][2]);
+  assert.strictEqual(rows[3][2], 'No');
+  assert.strictEqual(rows[4][2], 'No');
+  // refreshRecipients (menu) dà lo stesso conto e un messaggio chiaro
+  env.sandbox.refreshRecipients();
+  assert.ok(/Hanno risposto 2 su 5 \(40%\)\. Mancano 2; da verificare: 1/.test(env.alerts[env.alerts.length - 1]), env.alerts[env.alerts.length - 1]);
+  // un nome aggiunto dopo si valuta con onEdit
+  d.put(7, 1, 'Mario Bianchi');
+  env.sandbox.onEdit({ range: { getSheet: () => d, getColumn: () => 1 }, source: env.ss });
+  assert.ok(d.data[6][2] === 'Sì', d.data[6][2]);
+});
+
+test('Destinatari: foglio vuoto o assente non rompe il salvataggio delle risposte', () => {
+  const env = seeded();
+  delete env.sheets.Destinatari;
+  assert.strictEqual(post(env, newRsvp()).ok, true);
+  env.sandbox.refreshRecipients();
+  assert.ok(env.alerts[env.alerts.length - 1].includes('è vuoto'), env.alerts[env.alerts.length - 1]);
 });
 
 let failed = 0;

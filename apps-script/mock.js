@@ -40,6 +40,7 @@ class Sheet {
     for (let i = this.data.length - 1; i >= 0; i--) if ((this.data[i] || []).some((v) => v !== '' && v !== undefined)) return i + 1;
     return 0;
   }
+  getName() { return this.name; }
   getMaxRows() { return 1000; }
   getRange(r, c, nr = 1, nc = 1) { return new Range(this, r, c, nr, nc); }
   setFrozenRows() {}

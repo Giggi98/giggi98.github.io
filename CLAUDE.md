@@ -20,7 +20,7 @@ Contesto per Claude Code: stato del progetto e decisioni prese finora. Lingua di
 - Ricevimento: **Castello di Monasterolo**, Piazzetta Contessa V. Terni de Gregori 1, 24060 Monasterolo del Castello (BG), sul Lago di Endine; parco botanico con 700+ specie, siepi scolpite, piscina in marmo. Coordinate 45.7583456, 9.9184287.
 - Chiesa → castello: ~21,5 km, 30-35 minuti in auto (Val Cavallina).
 - Aeroporto più vicino: Bergamo Orio al Serio, a pochi km da Nembro (utile per gli ospiti inglesi).
-- Orari: **ancora da ricevere** dagli sposi.
+- Orari: cerimonia 11:00, ricevimento 13:30 (impostato il 2026-11-01 in `js/config.js`).
 
 ## Decisioni prese
 
@@ -30,7 +30,7 @@ Contesto per Claude Code: stato del progetto e decisioni prese finora. Lingua di
   - Per ogni persona: partecipa sì/no + esigenze alimentari (vegetariano/vegano, allergie, intolleranze).
   - Per invito: un campo libero "messaggio per gli sposi".
   - Dopo l'invio l'invitato vede solo il ringraziamento (niente riepilogo né link per modificare: scelta di Luigi, 2026-10-25).
-  - Bambini: li segna l'invitato con la casella "Bambino/a (menù bimbi)" (conteggio menù bimbi automatico nel foglio `Riepilogo`). Se è attiva e il bimbo viene, compare "Porti il tuo seggiolone?" Sì/No (obbligatoria; colonna `Seggiolone` in `Invitati`, righe in `Riepilogo`). Aggiunta il 2026-10-25: serve incollare il nuovo `Code.gs`, rifare il deploy e rilanciare "Prepara i fogli" (aggiunge l'intestazione).
+  - Bambini: li segna l'invitato con la casella "Bambino/a (menù bimbi)" (conteggio menù bimbi automatico nel foglio `Riepilogo`). Se è attiva e il bimbo viene, compare "Porti il tuo seggiolone?" Sì/No con tre risposte: "Sì" (lo porta), "No, ma ne avrei bisogno" (nel foglio "Serve"), "No, la sedia va bene" ("Non serve"); obbligatoria; colonna `Seggiolone` in `Invitati`, righe in `Riepilogo`. Aggiunta il 2026-10-25: serve incollare il nuovo `Code.gs`, rifare il deploy e rilanciare "Prepara i fogli" (aggiunge l'intestazione).
   - Proposta da confermare: mail di notifica agli sposi a ogni risposta (disattivabile).
   - Scartati: navetta, alloggio, canzone.
 - **Backend RSVP:** Google Sheet + Google Apps Script (web app) che riceve le risposte dal sito. Gratuito; il foglio si scarica in Excel. Risposte e codici vivono solo nel foglio; i link personali pre-generati dal menu "Genera codici e link" restano possibili ma non servono più.
@@ -51,7 +51,7 @@ HTML/CSS/JS statico, nessuna build, nessuna dipendenza. File:
 - `js/app.js`: lingua, countdown, foto d'apertura a scorrimento, calendario (pulsante verso `assets/matrimonio-it.ics`/`-en.ics`, file veri creati da `node tools/make_ics.js` da rilanciare quando cambiano data, luogo o testi `ics.*`; evento di un giorno intero; un blob generato al volo non funzionava su iPhone e nei browser di WhatsApp; senza link Google Calendar), link Maps, RSVP, lista nozze, galleria con lightbox.
 - `css/style.css`: stile. `fonts/` font self-hosted (Playball, Alegreya, Alegreya SC), nessuna chiamata a Google Fonts.
 - `assets/`: `hero/` (foto che scorrono nell'apertura), `chiesa.webp`, `ricevimento.webp`, `og.jpg` (anteprima WhatsApp 1200x630, rigenerare se cambia la foto), `favicon.svg`.
-- `apps-script/`: `Code.gs` (backend RSVP, da incollare nel Google Sheet), `appsscript.json`, `README.md` (installazione passo-passo), `mock.js` + `test.js` (`node apps-script/test.js`, 19 test su un finto foglio).
+- `apps-script/`: `Code.gs` (backend RSVP, da incollare nel Google Sheet; foglio `Destinatari`: elenco di chi ha ricevuto il messaggio, compilato dagli sposi, con "ha risposto" calcolato dallo script, % e link WhatsApp per chi manca; menu "4. Aggiorna chi ha risposto"; si aggiorna da solo a ogni risposta e a ogni modifica), `appsscript.json`, `README.md` (installazione passo-passo), `mock.js` + `test.js` (`node apps-script/test.js`, 23 test su un finto foglio).
 - `tools/optimize_photos.py`: ridimensiona le foto, toglie i metadati GPS, stampa il blocco `photos` per `config.js`.
 - `_config.yml`: esclude da Pages CLAUDE.md, README, apps-script, tools.
 
@@ -61,7 +61,7 @@ HTML/CSS/JS statico, nessuna build, nessuna dipendenza. File:
 
 **Senza backend:** con `rsvpApi` vuoto la sezione RSVP mostra il pulsante e, cliccandolo, "aprirà a breve". Il vecchio `?invito=DEMO` non esiste più. `rsvpApi` è impostato dal 2026-10-23 (deploy Apps Script fatto da Luigi). **Dopo ogni modifica a `Code.gs` bisogna incollarlo nel foglio e rifare il deploy** (Distribuisci > Gestisci distribuzioni > Nuova versione): l'URL resta lo stesso.
 
-**Collaudi fatti (2026-10-23):** `node apps-script/test.js` (19/19); browser headless Chrome contro `Code.gs` esposto da un server locale (invio, modifica, ricarica, cambio lingua con dati a metà, errore di rete, scadenza); screenshot mobile 390 px e desktop 1280 px. **Non verificato:** il comportamento reale di CORS/redirect di Apps Script (serve il deploy), le mappe OpenStreetMap incorporate (in headless non caricavano i tile), l'anteprima del link su WhatsApp (serve il sito pubblicato), VoiceOver/TalkBack.
+**Collaudi fatti (2026-10-23):** `node apps-script/test.js` (23/23); browser headless Chrome contro `Code.gs` esposto da un server locale (invio, modifica, ricarica, cambio lingua con dati a metà, errore di rete, scadenza); screenshot mobile 390 px e desktop 1280 px. **Non verificato:** il comportamento reale di CORS/redirect di Apps Script (serve il deploy), le mappe OpenStreetMap incorporate (in headless non caricavano i tile), l'anteprima del link su WhatsApp (serve il sito pubblicato), VoiceOver/TalkBack.
 
 ## Domande aperte
 

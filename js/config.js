@@ -21,8 +21,8 @@ window.SITE = {
     lat: 45.7583456,
     lng: 9.9184287,
     mapsQuery: 'Castello di Monasterolo, Piazzetta Contessa V. Terni de Gregori 1, 24060 Monasterolo del Castello BG',
-    // Orario ancora da comunicare: scrivilo qui (es. '13:00') e comparirà nel programma.
-    time: ''
+    // Orario del ricevimento (compare nel programma e nella sezione Il ricevimento).
+    time: '13:30'
   },
 
   // Regalo di nozze: segnaposto, da sostituire con l'IBAN vero.

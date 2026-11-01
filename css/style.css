@@ -437,6 +437,10 @@ a { color: inherit; }
 }
 .place__text { text-align: center; }
 .place__blurb { font-style: italic; }
+.person .hc { margin-top: 1.6rem; }
+.person .hc .field__label { margin-bottom: .6rem; }
+/* La L di "Luci" in corsivo maiuscolo (Alegreya corsivo, un po' ingrossata per reggere il confronto con Playball). */
+.l-cap { font-family: var(--serif); font-style: italic; font-size: .92em; -webkit-text-stroke: .035em currentColor; }
 .place__meta { margin-top: 1.2rem; }
 .place__meta strong { font-weight: 500; }
 .place__buttons { display: flex; flex-wrap: wrap; gap: .75rem; justify-content: center; }
@@ -691,7 +695,7 @@ a { color: inherit; }
 .trip__pin-name--left { right: calc(100% + .35rem); top: 50%; transform: translateY(-50%); }
 .trip__pin-name--above { bottom: calc(100% + .25rem); left: 50%; transform: translateX(-50%); }
 .trip__pin-name--below { top: calc(100% + .25rem); left: 50%; transform: translateX(-50%); }
-.trip__hint { margin: .9rem 0 0; text-align: center; font-style: italic; color: var(--muted); }
+.trip__hint { margin: 0 0 .9rem; text-align: center; font-style: italic; color: var(--muted); }
 /* Finché nessuno ha toccato un numero, i segnaposto pulsano piano per far capire che si possono premere. */
 @media (prefers-reduced-motion: no-preference) {
   .trip.is-new .trip__pin-num { animation: pin-pulse 2.4s ease-out infinite; }

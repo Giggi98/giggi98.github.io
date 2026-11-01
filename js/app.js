@@ -378,7 +378,7 @@
     function updateChair() { chair.hidden = !(p.child && p.attending === 'yes'); }
     var chair = h('div', { class: 'field hc', hidden: !(p.child && p.attending === 'yes') },
       h('p', { class: 'field__label', text: t('rsvp.highchair') }),
-      h('div', { class: 'choice' }, chairOption('yes', 'rsvp.yesWord'), chairOption('no', 'rsvp.noWord')));
+      h('div', { class: 'choice' }, chairOption('yes', 'rsvp.hcYes'), chairOption('need', 'rsvp.hcNeed'), chairOption('ok', 'rsvp.hcOk')));
 
     return h('fieldset', { class: 'person', 'data-key': p.key },
       h('legend', { text: fixed ? p.name : (i === 0 ? t('rsvp.you') : t('rsvp.person', { n: i + 1 })) }),
